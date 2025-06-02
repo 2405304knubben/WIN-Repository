@@ -39,9 +39,9 @@
                 @Html.DisplayFor(modelItem => item.Active)
             </td>
             <td>
-                <a asp-action="Aanpassen" asp-route-id="@item.Id">Aanpassen</a> |
-                <a asp-action="Informatie" asp-route-id="@item.Id">Informatie</a> |
-                <a asp-action="Verwijderen" asp-route-id="@item.Id">Verwijderen</a>
+                <a asp-action="Edit" asp-route-id="@item.Id">Aanpassen</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Informatie</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Verwijderen</a>
             </td>
         </tr>
 }
