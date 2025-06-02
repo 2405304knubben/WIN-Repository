@@ -1,0 +1,35 @@
+@model IEnumerable<DataAccessLayer.Models.Product>
+
+@{
+    ViewData["Title"] = "Productoverzicht";
+}
+
+<h1>Products</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Maak een nieuw product</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Product Naam</th>
+            <th>Product Beschrijving</th>
+            <th>Product Prijs</th>
+            <th>Acties</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var item in Model) {
+        <tr>
+            <td>@Html.DisplayFor(modelItem => item.Name)</td>
+            <td>@Html.DisplayFor(modelItem => item.Description)</td>
+            <td>€@Html.DisplayFor(modelItem => item.Price)</td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Aanpassen</a>
+                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Informatie</a>
+                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Verwijderen</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
