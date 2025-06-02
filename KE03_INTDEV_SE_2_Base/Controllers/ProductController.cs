@@ -13,7 +13,8 @@ using Microsoft.EntityFrameworkCore;
 namespace KE03_INTDEV_SE_2_Base.Controllers
 {
     public class ProductController : Controller
-    {        private readonly MatrixIncDbContext _context;
+    {
+        private readonly MatrixIncDbContext _context;
 
         public ProductController(MatrixIncDbContext context)
         {
@@ -52,7 +53,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Price")] Product product)
+        public async Task<IActionResult> Create([Bind("Id,Name,Description,Price,Stock")] Product product)
         {
             if (ModelState.IsValid)
             {
@@ -83,7 +84,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Price")] Product product)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Price,Stock")] Product product)
         {
             if (id != product.Id)
             {
