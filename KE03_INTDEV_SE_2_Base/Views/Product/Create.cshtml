@@ -27,6 +27,11 @@
                 <input asp-for="Price" class="form-control" />
                 <span asp-validation-for="Price" class="text-danger"></span>
             </div>
+            <div class="form-group"></div>
+                <label asp-for="Stock" class="form-check-label">
+                    <input class="form-check-input" asp-for="Stock" /> Voorraad
+                </label>
+            </div>
             <div class="form-group">
                 <input type="submit" value="Aanmaken" class="btn btn-primary" />
             </div>
