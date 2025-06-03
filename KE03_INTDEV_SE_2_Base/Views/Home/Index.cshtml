@@ -11,23 +11,35 @@
 
 <div class="row">
     <div class="col-md-6">
-        <div class="card shadow-sm slide-in-left">
+        <div class="card shadow-sm slide-in-left" id="salesCard">
             <div class="card-body">
                 <h5 class="card-title">Verkoop Statistieken</h5>
                 <div class="chart-container">
                     <canvas id="salesChart"></canvas>
-                    <a class="btn btn-link" role="button">Verkoop Statistieken voor het hele maand</a>
+                    <div class="mt-3 chart-controls">
+                        <select class="form-select mb-2" id="salesInterval">
+                            <option value="day">Vandaag (per 4 uur)</option>
+                            <option value="month">Dit jaar (per maand)</option>
+                            <option value="year">Per jaar</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-md-6">
-        <div class="card shadow-sm slide-in-right">
+        <div class="card shadow-sm slide-in-right" id="registrationsCard">
             <div class="card-body">
                 <h5 class="card-title">Registraties</h5>
                 <div class="chart-container">
                     <canvas id="registrationsChart"></canvas>
-                    <a class="btn btn-link" role="button">Nieuwe Registraties voor het hele maand</a>
+                    <div class="mt-3 chart-controls">
+                        <select class="form-select mb-2" id="registrationsInterval">
+                            <option value="day">Vandaag (per 4 uur)</option>
+                            <option value="month">Dit jaar (per maand)</option>
+                            <option value="year">Per jaar</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -36,88 +48,118 @@
 
 @section Scripts {
     <script>
-        // Destroy existing charts if they exist
-        let salesChart = Chart.getChart('salesChart');
-        if (salesChart) {
-            salesChart.destroy();
-        }
-        let registrationsChart = Chart.getChart('registrationsChart');
-        if (registrationsChart) {
-            registrationsChart.destroy();
-        }
+        let currentSalesChart = null;
+        let currentRegistrationsChart = null;
+        let isExpanded = false;
+        let expandedCard = null;
 
-        // Common chart options
-        const commonOptions = {
-            responsive: true,
-            animation: {
-                
-                easing: 'easeInOutQuad',
-                x: true,
-                y: false
-            },
-            scales: {
-                x: {
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.1)'
-                    }
-                },
-                y: {
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.1)'
-                    },
-                    beginAtZero: true
-                }
-            },
-            plugins: {
-                legend: {
-                    position: 'top'
-                }
+        // Dummy data voor testing
+        // Dummy data voor testing
+    const dummyData = {
+        day: {
+            labels: ['00:00-04:00', '04:00-08:00', '08:00-12:00', '12:00-16:00', '16:00-20:00', '20:00-23:59'],
+            sales: [5, 12, 8, 3, 6, 9],
+            registrations: [2, 5, 7, 1, 3, 4]
+        },
+        month: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'],
+            sales: [25, 45, 32, 67, 89, 72, 58, 63, 47, 52, 44, 85],
+            registrations: [12, 23, 34, 45, 56, 43, 28, 32, 38, 41, 36, 49]
+        },
+        year: {
+            labels: ['2022', '2023', '2024', '2025'],
+            sales: [240, 350, 480, 320],
+            registrations: [120, 180, 220, 160]
+        }
+    };
+
+        // Aangepaste updateChart functie met dummy data
+        async function updateChart(chartType, interval) {
+            const ctx = document.getElementById(`${chartType.toLowerCase()}Chart`).getContext('2d');
+            const chart = chartType === 'Sales' ? currentSalesChart : currentRegistrationsChart;
+
+            if (chart) {
+                chart.destroy();
             }
-        };
 
-        // Initialize charts after a small delay to allow animations
-        setTimeout(() => {
-            // Sales Chart
-            const salesCtx = document.getElementById('salesChart').getContext('2d');
-            salesChart = new Chart(salesCtx, {
+            const data = dummyData[interval];
+            const values = chartType === 'Sales' ? data.sales : data.registrations;
+
+            const newChart = new Chart(ctx, {
                 type: 'line',
-                duration: 1000,
                 data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                    labels: data.labels,
                     datasets: [{
-                        label: 'Verkopen voor de dag',
-                        data: [12, 19, 3, 5, 2, 3],
-                        borderColor: 'rgb(0, 0, 0)',
-                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                        label: `${chartType} ${interval}`,
+                        data: values,
+                        borderColor: chartType === 'Sales' ? 'rgb(0, 0, 0)' : 'rgb(128, 128, 128)',
+                        backgroundColor: chartType === 'Sales' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(128, 128, 128, 0.1)',
                         tension: 0.1,
                         fill: true
                     }]
                 },
-                options: commonOptions
+                options: {
+                    responsive: true,
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuad'
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
             });
 
-            // Registrations Chart 
-            const registrationsCtx = document.getElementById('registrationsChart').getContext('2d');
-            registrationsChart = new Chart(registrationsCtx, {
-                type: 'line',
-                duration: 2000,
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
-                    datasets: [{
-                        label: 'Nieuwe registraties',
-                        data: [5, 7, 4, 9, 12, 8],
-                        borderColor: 'rgb(128, 128, 128)',
-                        backgroundColor: 'rgba(128, 128, 128, 0.1)',
-                        tension: 0.1,
-                        fill: true
-                    }]
-                },
-                options: commonOptions
-            });
-        }, 500);
+            if (chartType === 'Sales') {
+                currentSalesChart = newChart;
+            } else {
+                currentRegistrationsChart = newChart;
+            }
+        }
 
-        // Add animation classes after page load
+        // Event listeners voor card expand/collapse
+        document.getElementById('salesCard').addEventListener('click', (e) => {
+            if (!e.target.matches('select')) {
+                toggleCardExpand('salesCard');
+                // Update chart size after animation
+                setTimeout(() => {
+                    if (currentSalesChart) {
+                        currentSalesChart.resize();
+                    }
+                }, 500);
+            }
+        });
+
+        document.getElementById('registrationsCard').addEventListener('click', (e) => {
+            if (!e.target.matches('select')) {
+                toggleCardExpand('registrationsCard');
+                // Update chart size after animation
+                setTimeout(() => {
+                    if (currentRegistrationsChart) {
+                        currentRegistrationsChart.resize();
+                    }
+                }, 500);
+            }
+        });
+
+        // Event listeners voor interval selectie
+        document.getElementById('salesInterval').addEventListener('change', (e) => {
+            updateChart('Sales', e.target.value);
+        });
+
+        document.getElementById('registrationsInterval').addEventListener('change', (e) => {
+            updateChart('Registrations', e.target.value);
+        });
+
+        // Initialize charts on page load
         document.addEventListener('DOMContentLoaded', function() {
+            // Initial chart creation
+            updateChart('Sales', 'day');
+            updateChart('Registrations', 'day');
+
+            // Add visibility classes after small delay
             setTimeout(() => {
                 document.querySelectorAll('.chart-container').forEach(container => {
                     container.classList.add('visible');
@@ -126,4 +168,3 @@
         });
     </script>
 }
-
