@@ -1,28 +1,129 @@
 ﻿@{
-    ViewData["Title"] = "Home pagina";
+    ViewData["Title"] = "Admin Dashboard";
 }
 
-<div class="alert-info">
-    <p class="p-1">
-        Dit project kun je gebruiken als startpunt voor de groeps inleveropdracht: <a href="https://moodle.zuyd.nl/mod/resource/view.php?id=1262065">KE03_INTDEV_SE_2</a>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="~/css/Dashboard.css" asp-append-version="true" />
 
-        <ul>
-            <li>Wat ga je maken: Je realiseert samen met je casus groep een webapplicatie, een “admin-achtige” webapplicatie waarbij je gebruik maakt van ASP.NET Core MVC architecture pattern. De belangrijkste hoofdprestatie en functionele eisen van deze applicatie zijn als volgt: Het back-office team van Matrix Inc. kan de producten en bijbehorende data en details beheren in deze webapplicatie, zodat de interne en externe klanten altijd over de juiste informatie beschikken.</li>
-            
-            <li>
-                Hoe ga je dit maken?<br />
-                - Groepsopdracht.<br />
-                - Pas de principes van HCI toe (bijv. Paper prototyping, design principles etc…)<br />
-                - Jullie web applicatie maakt gebruik van het MVC architectural pattern.<br />                
-                - Je werkt met je casusgroep op 1 github repository. Tip: je kunt met branches en pull requests werken<br />
-                - Jullie applicatie maakt gebruik van responsive design, meerdere html elementen en toegepast css styles.<br />
-                - Jullie applicatie maakt gebruik van de aangeleverde data access layer voor een snelle start. Deze mag je zelf uitbreiden of aanpassen indien gewenst.<br />
-            </li>
-            <li>
-                Je krijgt een dal (data access layer) meegeleverd. Qua inhoud is die niet perfect gevuld, maar qua structuur biedt die voldoende om een mooi bestel systeem te kunnen maken. <br />
-                In het voorbeeld wordt nog geen gebruik gemaakt van de repository classes, maar direct van de db context. Het is aan jezelf om aan te passen en te kiezen hoe je dit kunt wil toepassen en/of oplossen.<br />
-                Maar mis je iets, je bent vrij om alles naar wens aan te passen! Ben creatief!
-            </li>
-        </ul>
-    </p>
+<div class="text-center mb-4 fade-in">
+    <h1 class="display-4">Welkom bij het Admin Dashboard</h1>
 </div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm slide-in-left">
+            <div class="card-body">
+                <h5 class="card-title">Verkoop Statistieken</h5>
+                <div class="chart-container">
+                    <canvas id="salesChart"></canvas>
+                    <a class="btn btn-link" role="button">Verkoop Statistieken voor het hele maand</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm slide-in-right">
+            <div class="card-body">
+                <h5 class="card-title">Registraties</h5>
+                <div class="chart-container">
+                    <canvas id="registrationsChart"></canvas>
+                    <a class="btn btn-link" role="button">Nieuwe Registraties voor het hele maand</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Destroy existing charts if they exist
+        let salesChart = Chart.getChart('salesChart');
+        if (salesChart) {
+            salesChart.destroy();
+        }
+        let registrationsChart = Chart.getChart('registrationsChart');
+        if (registrationsChart) {
+            registrationsChart.destroy();
+        }
+
+        // Common chart options
+        const commonOptions = {
+            responsive: true,
+            animation: {
+                
+                easing: 'easeInOutQuad',
+                x: true,
+                y: false
+            },
+            scales: {
+                x: {
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                y: {
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.1)'
+                    },
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top'
+                }
+            }
+        };
+
+        // Initialize charts after a small delay to allow animations
+        setTimeout(() => {
+            // Sales Chart
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            salesChart = new Chart(salesCtx, {
+                type: 'line',
+                duration: 1000,
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                    datasets: [{
+                        label: 'Verkopen voor de dag',
+                        data: [12, 19, 3, 5, 2, 3],
+                        borderColor: 'rgb(0, 0, 0)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: commonOptions
+            });
+
+            // Registrations Chart 
+            const registrationsCtx = document.getElementById('registrationsChart').getContext('2d');
+            registrationsChart = new Chart(registrationsCtx, {
+                type: 'line',
+                duration: 2000,
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+                    datasets: [{
+                        label: 'Nieuwe registraties',
+                        data: [5, 7, 4, 9, 12, 8],
+                        borderColor: 'rgb(128, 128, 128)',
+                        backgroundColor: 'rgba(128, 128, 128, 0.1)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: commonOptions
+            });
+        }, 500);
+
+        // Add animation classes after page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                document.querySelectorAll('.chart-container').forEach(container => {
+                    container.classList.add('visible');
+                });
+            }, 100);
+        });
+    </script>
+}
+
