@@ -32,13 +32,14 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }        [HttpPost]
+        }
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Search(string search)
         {
             if (string.IsNullOrEmpty(search))
                 return RedirectToAction("Index", "Home");
-                
+
             var allProducts = _productRepository.GetAllProducts();
             Product matchingProduct = null;
             foreach (var product in allProducts)
@@ -49,7 +50,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                     break;
                 }
             }
-            
+
             if (matchingProduct != null)
             {
                 return RedirectToAction("Details", "Product", new { id = matchingProduct.Id });
@@ -57,5 +58,6 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
 
             return RedirectToAction("Index", "Product");
         }
+        
     }
 }
