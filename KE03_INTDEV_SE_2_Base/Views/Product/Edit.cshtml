@@ -1,12 +1,12 @@
 ﻿@model DataAccessLayer.Models.Product
 
 @{
-    ViewData["Title"] = "Klantinformatie aanpassen";
+    ViewData["Title"] = "Product aanpassen";
 }
 
-<h1>Klanteninformatie aanpassen</h1>
+<h1>Product aanpassen</h1>
 
-<h4>Klant</h4>
+<h4>Product</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -29,11 +29,6 @@
                 <span asp-validation-for="Price" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Stock" class="control-label">Voorraad</label>
-                <input asp-for="Stock" class="form-control" />
-                <span asp-validation-for="Stock" class="text-danger"></span>
-            </div>
-            <div class="form-group">
                 <input type="submit" value="Opslaan" class="btn btn-primary" />
             </div>
         </form>
@@ -41,7 +36,7 @@
 </div>
 
 <div>
-    <a asp-action="Index">Terug naar klantenoverzicht</a>
+    <a asp-action="Index">Terug naar productenoverzicht</a>
 </div>
 
 @section Scripts {
