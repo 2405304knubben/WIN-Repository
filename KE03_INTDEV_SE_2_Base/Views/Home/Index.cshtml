@@ -7,11 +7,11 @@
     <div class="date-filter mb-4">
         <div class="form-row">
             <div class="col-md-3">
-                <label for="startDate">Start Date</label>
+                <label for="startDate">Start Datum</label>
                 <input type="date" id="startDate" class="form-control" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
             </div>
             <div class="col-md-3">
-                <label for="endDate">End Date</label>
+                <label for="endDate">Eind Datum</label>
                 <input type="date" id="endDate" class="form-control" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
             </div>
             <div class="col-md-2 align-self-end">
@@ -20,8 +20,8 @@
             <div class="col-md-4 align-self-end">
                 <div class="btn-group" role="group">
                     <button type="button" class="btn btn-secondary" data-period="7">Week</button>
-                    <button type="button" class="btn btn-secondary" data-period="30">Month</button>
-                    <button type="button" class="btn btn-secondary" data-period="365">Year</button>
+                    <button type="button" class="btn btn-secondary" data-period="30">Maand</button>
+                    <button type="button" class="btn btn-secondary" data-period="365">Jaar</button>
                 </div>
             </div>
         </div>
@@ -31,7 +31,7 @@
         <div class="col-md-4">
             <div class="card stats-card">
                 <div class="card-body">
-                    <h5 class="card-title">Total Orders</h5>
+                    <h5 class="card-title">Totale Bestellingen</h5>
                     <p class="card-text" id="totalOrders">@Model.TotalOrders</p>
                 </div>
             </div>
@@ -39,7 +39,7 @@
         <div class="col-md-4">
             <div class="card stats-card">
                 <div class="card-body">
-                    <h5 class="card-title">Total Revenue</h5>
+                    <h5 class="card-title">Totale Omzet</h5>
                     <p class="card-text" id="totalRevenue">€@Model.TotalRevenue.ToString("N2")</p>
                 </div>
             </div>
@@ -47,7 +47,7 @@
         <div class="col-md-4">
             <div class="card stats-card">
                 <div class="card-body">
-                    <h5 class="card-title">New Customers</h5>
+                    <h5 class="card-title">Aantal Klanten</h5>
                     <p class="card-text" id="newCustomers">@Model.NewCustomers</p>
                 </div>
             </div>
@@ -58,7 +58,7 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Daily Orders</h5>
+                    <h5 class="card-title">Dagelijkse Bestellingen</h5>
                     <canvas id="ordersChart"></canvas>
                 </div>
             </div>
@@ -66,7 +66,7 @@
         <div class="col-md-6">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Daily Revenue</h5>
+                    <h5 class="card-title">Dagelijkse Omzet</h5>
                     <canvas id="revenueChart"></canvas>
                 </div>
             </div>
@@ -93,7 +93,7 @@
                 data: {
                     labels: orderData.map(d => d.date),
                     datasets: [{
-                        label: 'Orders',
+                        label: 'Bestellingen',
                         data: orderData.map(d => d.count),
                         borderColor: 'rgb(75, 192, 192)',
                         tension: 0.1
@@ -114,7 +114,7 @@
                 data: {
                     labels: revenueData.map(d => d.date),
                     datasets: [{
-                        label: 'Revenue (€)',
+                        label: 'Omzet (€)',
                         data: revenueData.map(d => d.revenue),
                         borderColor: 'rgb(153, 102, 255)',
                         tension: 0.1
@@ -166,23 +166,69 @@
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
 
+            document.getElementById('updateStats').disabled = true;
+
             fetch('/Home/UpdateStatistics', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
                 body: JSON.stringify({ startDate, endDate })
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('totalOrders').textContent = data.totalOrders;
-                document.getElementById('totalRevenue').textContent = `€${data.totalRevenue.toFixed(2)}`;
-                document.getElementById('newCustomers').textContent = data.newCustomers;
+                console.log('Raw received data:', data);
+                console.log('DailyOrderCounts:', JSON.stringify(data.dailyOrderCounts, null, 2));
+                console.log('DailyRevenue:', JSON.stringify(data.dailyRevenue, null, 2));
 
-                const orderData = data.dailyOrderCounts.map(x => ({ date: x.date.split('T')[0], count: x.count }));
-                const revenueData = data.dailyRevenue.map(x => ({ date: x.date.split('T')[0], revenue: x.revenue }));
-                
-                updateCharts(orderData, revenueData);
+                if (data) {
+                    // Update statistics
+                    document.getElementById('totalOrders').textContent = data.totalOrders;
+                    document.getElementById('totalRevenue').textContent = `€${parseFloat(data.totalRevenue).toFixed(2)}`;
+                    document.getElementById('newCustomers').textContent = data.newCustomers;
+
+                    // Update charts only if we have valid data
+                    if (Array.isArray(data.dailyOrderCounts) && Array.isArray(data.dailyRevenue)) {
+                        const orderData = data.dailyOrderCounts
+                            .filter(x => x && Object.keys(x).length > 0)  // Filter lege objecten
+                            .map(x => {
+                                console.log('Processing order item:', x);
+                                return {
+                                    date: x.Date ? x.Date.split('T')[0] : x.date ? x.date.split('T')[0] : '',
+                                    count: x.Count || x.count || 0
+                                };
+                            })
+                            .filter(x => x.date);
+
+                        const revenueData = data.dailyRevenue
+                            .filter(x => x && Object.keys(x).length > 0)  // Filter lege objecten
+                            .map(x => {
+                                console.log('Processing revenue item:', x);
+                                return {
+                                    date: x.Date ? x.Date.split('T')[0] : x.date ? x.date.split('T')[0] : '',
+                                    revenue: x.Revenue || x.revenue || 0
+                                };
+                            })
+                            .filter(x => x.date);
+
+                        console.log('Final processed order data:', orderData);
+                        console.log('Final processed revenue data:', revenueData);
+
+                        if (orderData.length > 0 && revenueData.length > 0) {
+                            updateCharts(orderData, revenueData);
+                        } else {
+                            console.warn('No valid data to update charts');
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error updating statistics:', error);
+                alert('Er is een fout opgetreden bij het ophalen van de statistieken.');
+            })
+            .finally(() => {
+                document.getElementById('updateStats').disabled = false;
             });
         }
     </script>

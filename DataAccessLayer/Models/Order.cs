@@ -20,7 +20,9 @@ namespace DataAccessLayer.Models
 
         public ICollection<OrderProduct> OrderProducts { get; set; } = new List<OrderProduct>();
 
-        [NotMapped]
-        public decimal TotalPrice => OrderProducts.Sum(op => op.Product.Price * op.Aantal);
+        public decimal TotalPrice => OrderProducts?.Sum(op => op.Product.Price * op.Aantal) ?? 0m;
+
+        [NotMapped] // Add this attribute
+        public decimal CalculatedTotalPrice { get; set; }
     }
 }

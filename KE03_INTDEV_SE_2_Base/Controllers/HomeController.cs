@@ -43,18 +43,35 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         }
 
         [HttpPost]
-        public IActionResult UpdateStatistics(DateTime startDate, DateTime endDate)
+        public IActionResult UpdateStatistics([FromBody] DateRangeModel dateRange)
         {
+            var startDate = DateTime.Parse(dateRange.startDate);
+            var endDate = DateTime.Parse(dateRange.endDate);
+
+            var dailyOrders = _orderRepository.GetDailyOrderCounts(startDate, endDate)
+                .Select(x => new { date = x.Date.ToString("yyyy-MM-dd"), count = x.Count })
+                .ToList();
+
+            var dailyRevenue = _orderRepository.GetDailyRevenue(startDate, endDate)
+                .Select(x => new { date = x.Date.ToString("yyyy-MM-dd"), revenue = x.Revenue })
+                .ToList();
+
             var statistics = new
             {
                 totalOrders = _orderRepository.GetTotalOrdersCount(startDate, endDate),
                 totalRevenue = _orderRepository.GetTotalRevenue(startDate, endDate),
                 newCustomers = _orderRepository.GetNewCustomersCount(startDate, endDate),
-                dailyOrderCounts = _orderRepository.GetDailyOrderCounts(startDate, endDate),
-                dailyRevenue = _orderRepository.GetDailyRevenue(startDate, endDate)
+                dailyOrderCounts = dailyOrders,
+                dailyRevenue = dailyRevenue
             };
 
             return Json(statistics);
+        }
+
+        public class DateRangeModel
+        {
+            public string startDate { get; set; }
+            public string endDate { get; set; }
         }
 
         public IActionResult Privacy()

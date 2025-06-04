@@ -58,11 +58,15 @@ namespace DataAccessLayer.Repositories
             var query = _context.Orders.AsQueryable();
 
             if (startDate.HasValue)
-                query = query.Where(o => o.OrderDate >= startDate.Value);
+                query = query.Where(o => o.OrderDate.Date >= startDate.Value.Date);
             if (endDate.HasValue)
-                query = query.Where(o => o.OrderDate <= endDate.Value);
+                query = query.Where(o => o.OrderDate.Date <= endDate.Value.Date);
 
-            return query.Count();
+            // Tel het aantal unieke orders
+            return query
+                .Select(o => o.Id) // Selecteer alleen de Id's voor betere performance
+                .Distinct() // Zorg ervoor dat we geen dubbele orders tellen
+                .Count();
         }
 
         public decimal GetTotalRevenue(DateTime? startDate = null, DateTime? endDate = null)
@@ -73,53 +77,66 @@ namespace DataAccessLayer.Repositories
                 .AsQueryable();
 
             if (startDate.HasValue)
-                query = query.Where(o => o.OrderDate >= startDate.Value);
+                query = query.Where(o => o.OrderDate.Date >= startDate.Value.Date);
             if (endDate.HasValue)
-                query = query.Where(o => o.OrderDate <= endDate.Value);
+                query = query.Where(o => o.OrderDate.Date <= endDate.Value.Date);
 
-            return query.ToList().Sum(o => o.TotalPrice);
+            return query.AsEnumerable()
+                .Sum(o => o.OrderProducts.Sum(op => op.Product.Price * op.Aantal));
         }        public IEnumerable<(DateTime Date, int Count)> GetDailyOrderCounts(DateTime startDate, DateTime endDate)
         {
+            // Zorg ervoor dat we alleen de datum vergelijken, niet de tijd
+            var dateStart = startDate.Date;
+            var dateEnd = endDate.Date;
+
             var orders = _context.Orders
-                .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
+                .Where(o => o.OrderDate.Date >= dateStart && o.OrderDate.Date <= dateEnd)
+                .GroupBy(o => o.OrderDate.Date)
+                .Select(g => new { Date = g.Key, Count = g.Count() })
                 .ToList();
 
-            // Genereer een lijst van alle datums in de range
-            var allDates = Enumerable.Range(0, (endDate - startDate).Days + 1)
-                .Select(offset => startDate.AddDays(offset).Date);
+            // Vul missende datums in met 0
+            var allDates = Enumerable.Range(0, (dateEnd - dateStart).Days + 1)
+                .Select(offset => dateStart.AddDays(offset))
+                .ToList();
 
-            // Join de orders met alle datums om ook datums zonder orders te krijgen (met count 0)
-            return allDates
-                .GroupJoin(
-                    orders,
-                    date => date,
-                    order => order.OrderDate.Date,
-                    (date, ordersOnDate) => (
-                        Date: date,
-                        Count: ordersOnDate.Count()
-                    ))
-                .OrderBy(x => x.Date);
+            var result = allDates.Select(date => (
+                Date: date,
+                Count: orders.FirstOrDefault(o => o.Date == date)?.Count ?? 0
+            ));
+
+            return result;
         }        public IEnumerable<(DateTime Date, decimal Revenue)> GetDailyRevenue(DateTime startDate, DateTime endDate)
         {
-            var orders = _context.Orders
+            var dateStart = startDate.Date;
+            var dateEnd = endDate.Date;
+
+            var revenues = _context.Orders
                 .Include(o => o.OrderProducts)
                 .ThenInclude(op => op.Product)
-                .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
+                .Where(o => o.OrderDate.Date >= dateStart && o.OrderDate.Date <= dateEnd)
+                .AsEnumerable() // Switch to client-side evaluation
+                .GroupBy(o => o.OrderDate.Date)
+                .Select(g => new
+                {
+                    Date = g.Key,
+                    Revenue = g.Sum(o => o.TotalPrice)
+                })
                 .ToList();
 
-            // Genereer een lijst van alle datums in de range
-            var allDates = Enumerable.Range(0, (endDate - startDate).Days + 1)
-                .Select(offset => startDate.AddDays(offset).Date);
+            // Vul missende datums aan
+            var allDates = Enumerable.Range(0, (dateEnd - dateStart).Days + 1)
+                .Select(offset => dateStart.AddDays(offset))
+                .ToList();
 
-            // Join de orders met alle datums om ook datums zonder orders te krijgen (met 0 revenue)
             return allDates
                 .GroupJoin(
-                    orders,
+                    revenues,
                     date => date,
-                    order => order.OrderDate.Date,
-                    (date, ordersOnDate) => (
+                    rev => rev.Date,
+                    (date, revs) => (
                         Date: date,
-                        Revenue: ordersOnDate.Any() ? ordersOnDate.Sum(o => o.TotalPrice) : 0m
+                        Revenue: revs.FirstOrDefault()?.Revenue ?? 0m
                     ))
                 .OrderBy(x => x.Date);
         }
