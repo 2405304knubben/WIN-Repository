@@ -7,7 +7,7 @@
     <!-- Cards -->
     <div class="row">
         <div class="col-md-4">
-            <div class="card stats-card">
+            <div class="card stats-card" style="cursor: pointer" onclick="window.location.href = '@Url.Action("Index", "Product")'">
                 <div class="card-body">
                     <h5 class="card-title">Totale Bestellingen</h5>
                     <p class="card-text" id="totalOrders">@Model.TotalOrders</p>
@@ -15,7 +15,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card stats-card">
+            <div class="card stats-card" style="cursor: pointer" onclick="window.location.href = '@Url.Action("Index", "Product")'">
                 <div class="card-body">
                     <h5 class="card-title">Totale Omzet</h5>
                     <p class="card-text" id="totalRevenue">€@Model.TotalRevenue.ToString("N2")</p>
@@ -23,7 +23,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card stats-card">
+            <div class="card stats-card" style="cursor: pointer" onclick="window.location.href = '@Url.Action("Index", "Customers")'">
                 <div class="card-body">
                     <h5 class="card-title">Totaal Aantal Klanten</h5>
                     <p class="card-text" id="totalCustomers">@Model.TotalCustomers</p>
