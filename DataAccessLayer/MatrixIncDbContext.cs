@@ -16,24 +16,25 @@ namespace DataAccessLayer
         public DbSet<OrderProduct> OrderProducts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<Customer>()
+        {            modelBuilder.Entity<Customer>()
                 .HasMany(c => c.Orders)
                 .WithOne(o => o.Customer)
                 .HasForeignKey(o => o.CustomerId)
                 .IsRequired();            modelBuilder.Entity<OrderProduct>()
-                .ToTable("OrderProduct")
+                .ToTable("orderProduct")
                 .HasKey(op => new { op.OrdersId, op.ProductsId });
 
             modelBuilder.Entity<OrderProduct>()
                 .HasOne(op => op.Order)
                 .WithMany(o => o.OrderProducts)
-                .HasForeignKey(op => op.OrdersId);
+                .HasForeignKey(op => op.OrdersId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<OrderProduct>()
                 .HasOne(op => op.Product)
                 .WithMany(p => p.OrderProducts)
-                .HasForeignKey(op => op.ProductsId);
+                .HasForeignKey(op => op.ProductsId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Part>()
                 .HasMany(p => p.Products)
