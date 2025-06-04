@@ -27,24 +27,46 @@ namespace DataAccessLayer
                 new Customer { Name = "Morpheus", Address = "456 Oak St", Active = true },
                 new Customer { Name = "Trinity", Address = "789 Pine St", Active = true }
             };
-            context.Customers.AddRange(customers);
-
-            var orders = new Order[]
-            {
-                new Order { Customer = customers[0], OrderDate = DateTime.Parse("2021-01-01")},
-                new Order { Customer = customers[0], OrderDate = DateTime.Parse("2021-02-01")},
-                new Order { Customer = customers[1], OrderDate = DateTime.Parse("2021-02-01")},
-                new Order { Customer = customers[2], OrderDate = DateTime.Parse("2021-03-01")}
-            };  
-            context.Orders.AddRange(orders);
-
-            var products = new Product[]
+            context.Customers.AddRange(customers);            var products = new Product[]
             {
                 new Product { Name = "Nebuchadnezzar", Description = "Het schip waarop Neo voor het eerst de echte wereld leert kennen", Price = 10000.00m },
                 new Product { Name = "Jack-in Chair", Description = "Stoel met een rugsteun en metalen armen waarin mensen zitten om ingeplugd te worden in de Matrix via een kabel in de nekpoort", Price = 500.50m },
                 new Product { Name = "EMP (Electro-Magnetic Pulse) Device", Description = "Wapentuig op de schepen van Zion", Price = 129.99m }
             };
             context.Products.AddRange(products);
+
+            // Genereer wat orders voor de laatste 30 dagen
+            var random = new Random();
+            var orders = new List<Order>();
+            var now = DateTime.Now;
+            
+            for (var i = 30; i >= 0; i--)
+            {
+                var orderDate = now.AddDays(-i);
+                var numOrders = random.Next(0, 4); // 0-3 orders per dag
+                
+                for (var j = 0; j < numOrders; j++)
+                {
+                    var customer = customers[random.Next(customers.Length)];
+                    var order = new Order { Customer = customer, OrderDate = orderDate };
+                    
+                    // Voeg 1-3 producten toe aan elke order
+                    var numProducts = random.Next(1, 4);
+                    for (var k = 0; k < numProducts; k++)
+                    {
+                        var product = products[random.Next(products.Length)];
+                        var aantal = random.Next(1, 4);
+                        order.OrderProducts.Add(new OrderProduct 
+                        { 
+                            Product = product,
+                            Aantal = aantal
+                        });
+                    }
+                    
+                    orders.Add(order);
+                }
+            }
+              context.Orders.AddRange(orders);
 
             var parts = new Part[]
             {

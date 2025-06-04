@@ -18,5 +18,16 @@ namespace DataAccessLayer.Interfaces
         public void UpdateOrder(Order order);
 
         public void DeleteOrder(Order order);
+
+        // Statistics methods
+        public int GetTotalOrdersCount(DateTime? startDate = null, DateTime? endDate = null);
+
+        public decimal GetTotalRevenue(DateTime? startDate = null, DateTime? endDate = null);
+
+        public IEnumerable<(DateTime Date, int Count)> GetDailyOrderCounts(DateTime startDate, DateTime endDate);
+
+        public IEnumerable<(DateTime Date, decimal Revenue)> GetDailyRevenue(DateTime startDate, DateTime endDate);
+
+        public int GetNewCustomersCount(DateTime? startDate = null, DateTime? endDate = null);
     }
 }

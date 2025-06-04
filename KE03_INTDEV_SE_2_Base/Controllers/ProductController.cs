@@ -61,8 +61,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         // POST: Products/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Price,Stock")] Product product)
+        [ValidateAntiForgeryToken]        public async Task<IActionResult> Create([Bind("Id,Name,Description,Price")] Product product)
         {
             if (ModelState.IsValid)
             {
@@ -92,8 +91,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         // POST: Products/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Price,Stock")] Product product)
+        [ValidateAntiForgeryToken]        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Price")] Product product)
         {
             if (id != product.Id)
             {
