@@ -4,29 +4,7 @@
 }
 
 <div class="dashboard">
-    <div class="date-filter mb-4">
-        <div class="form-row">
-            <div class="col-md-3">
-                <label for="startDate">Start Datum</label>
-                <input type="date" id="startDate" class="form-control" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
-            </div>
-            <div class="col-md-3">
-                <label for="endDate">Eind Datum</label>
-                <input type="date" id="endDate" class="form-control" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
-            </div>
-            <div class="col-md-2 align-self-end">
-                <button id="updateStats" class="btn btn-primary">Update</button>
-            </div>
-            <div class="col-md-4 align-self-end">
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-secondary" data-period="7">Week</button>
-                    <button type="button" class="btn btn-secondary" data-period="30">Maand</button>
-                    <button type="button" class="btn btn-secondary" data-period="365">Jaar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <!-- Cards -->
     <div class="row">
         <div class="col-md-4">
             <div class="card stats-card">
@@ -47,13 +25,38 @@
         <div class="col-md-4">
             <div class="card stats-card">
                 <div class="card-body">
-                    <h5 class="card-title">Aantal Klanten</h5>
-                    <p class="card-text" id="newCustomers">@Model.NewCustomers</p>
+                    <h5 class="card-title">Totaal Aantal Klanten</h5>
+                    <p class="card-text" id="totalCustomers">@Model.TotalCustomers</p>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Date Filter -->
+    <div class="date-filter my-4">
+        <div class="d-flex align-items-end gap-3">
+            <div>
+                <label for="startDate" class="form-label">Start Datum</label>
+                <input type="date" id="startDate" class="form-control" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
+            </div>
+            <div>
+                <label for="endDate" class="form-label">Eind Datum</label>
+                <input type="date" id="endDate" class="form-control" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
+            </div>
+            <div>
+                <button id="updateStats" class="btn btn-primary">Update</button>
+            </div>
+            <div class="ms-auto">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-secondary" data-period="7">Week</button>
+                    <button type="button" class="btn btn-secondary" data-period="30">Maand</button>
+                    <button type="button" class="btn btn-secondary" data-period="365">Jaar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
     <div class="row mt-4">
         <div class="col-md-6">
             <div class="card">
@@ -144,8 +147,44 @@
         document.addEventListener('DOMContentLoaded', function() {
             initializeCharts();
 
+            // Voeg event listeners toe voor datum validatie
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            const updateButton = document.getElementById('updateStats');
+
+            // Stel maximum datum in op vandaag
+            const today = new Date().toISOString().split('T')[0];
+            startDateInput.max = today;
+            endDateInput.max = today;
+
+            function validateDates() {
+                const startDate = new Date(startDateInput.value);
+                const endDate = new Date(endDateInput.value);
+                const isValid = startDate <= endDate;
+
+                updateButton.disabled = !isValid;
+                
+                if (!isValid) {
+                    alert('De startdatum moet voor of gelijk zijn aan de einddatum');
+                    return false;
+                }
+                return true;
+            }
+
+            // Valideer bij elke datum verandering
+            startDateInput.addEventListener('change', validateDates);
+            endDateInput.addEventListener('change', validateDates);
+
+            // Update de updateStatistics functie om eerst te valideren
+            const originalUpdateStats = updateStatistics;
+            updateStatistics = function() {
+                if (validateDates()) {
+                    originalUpdateStats();
+                }
+            };
+
             // Handle date filter updates
-            document.getElementById('updateStats').addEventListener('click', updateStatistics);
+            updateButton.addEventListener('click', updateStatistics);
 
             // Handle period buttons
             document.querySelectorAll('[data-period]').forEach(button => {
@@ -178,15 +217,11 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log('Raw received data:', data);
-                console.log('DailyOrderCounts:', JSON.stringify(data.dailyOrderCounts, null, 2));
-                console.log('DailyRevenue:', JSON.stringify(data.dailyRevenue, null, 2));
-
                 if (data) {
                     // Update statistics
                     document.getElementById('totalOrders').textContent = data.totalOrders;
                     document.getElementById('totalRevenue').textContent = `€${parseFloat(data.totalRevenue).toFixed(2)}`;
-                    document.getElementById('newCustomers').textContent = data.newCustomers;
+                    document.getElementById('totalCustomers').textContent = data.totalCustomers; // Gewijzigd van newCustomers naar totalCustomers
 
                     // Update charts only if we have valid data
                     if (Array.isArray(data.dailyOrderCounts) && Array.isArray(data.dailyRevenue)) {
