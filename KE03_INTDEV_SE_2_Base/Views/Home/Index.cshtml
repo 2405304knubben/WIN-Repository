@@ -144,8 +144,44 @@
         document.addEventListener('DOMContentLoaded', function() {
             initializeCharts();
 
+            // Voeg event listeners toe voor datum validatie
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            const updateButton = document.getElementById('updateStats');
+
+            // Stel maximum datum in op vandaag
+            const today = new Date().toISOString().split('T')[0];
+            startDateInput.max = today;
+            endDateInput.max = today;
+
+            function validateDates() {
+                const startDate = new Date(startDateInput.value);
+                const endDate = new Date(endDateInput.value);
+                const isValid = startDate <= endDate;
+
+                updateButton.disabled = !isValid;
+                
+                if (!isValid) {
+                    alert('De startdatum moet voor of gelijk zijn aan de einddatum');
+                    return false;
+                }
+                return true;
+            }
+
+            // Valideer bij elke datum verandering
+            startDateInput.addEventListener('change', validateDates);
+            endDateInput.addEventListener('change', validateDates);
+
+            // Update de updateStatistics functie om eerst te valideren
+            const originalUpdateStats = updateStatistics;
+            updateStatistics = function() {
+                if (validateDates()) {
+                    originalUpdateStats();
+                }
+            };
+
             // Handle date filter updates
-            document.getElementById('updateStats').addEventListener('click', updateStatistics);
+            updateButton.addEventListener('click', updateStatistics);
 
             // Handle period buttons
             document.querySelectorAll('[data-period]').forEach(button => {
