@@ -1,13 +1,13 @@
-﻿@model DataAccessLayer.Models.Product
+﻿@model DataAccessLayer.Models.Part
 
 @{
-    ViewData["Title"] = "Product Informatie";
+    ViewData["Title"] = "Part Informatie";
 }
 
 <h1>Informatie</h1>
 
 <div>
-    <h4>Product</h4>
+    <h4>Onderdeel</h4>
     <hr />
     <dl class="row">
         <dt class="col-sm-2">
@@ -38,5 +38,5 @@
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Id">Aanpassen</a> |
-    <a asp-action="Index">Terug naar productoverzicht</a>
+    <a asp-action="Index">Terug naar voorraad</a>
 </div>

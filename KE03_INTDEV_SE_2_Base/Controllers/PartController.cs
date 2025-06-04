@@ -13,28 +13,28 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KE03_INTDEV_SE_2_Base.Controllers
 {
-    public class ProductController : Controller
+    public class PartController : Controller
     {
         private readonly MatrixIncDbContext _context;
 
-        public ProductController(MatrixIncDbContext context)
+        public PartController(MatrixIncDbContext context)
         {
             _context = context;
         }
 
-        // GET: Products
+        // GET: Parts
         public async Task<IActionResult> Index()
         {
-            var viewModel = new ProductOverviewViewModel
+            var viewModel = new PartOverviewViewModel
             {
                 Products = await _context.Products.Include(p => p.Parts).ToListAsync(),
                 Parts = await _context.Parts.Include(p => p.Products).ToListAsync()
             };
 
-            return RedirectToAction("Index", "Voorraad");
+            return RedirectToAction("Index", "Product");
         }
 
-        // GET: Products/Details/5
+        // GET: Parts/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -42,38 +42,38 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
+            var part = await _context.Parts
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (product == null)
+            if (part == null)
             {
                 return NotFound();
             }
 
-            return View(product);
+            return View(part);
         }
 
-        // GET: Products/Create
+        // GET: Parts/Create
         public IActionResult Create()
         {
             return View();
         }
 
-        // POST: Products/Create
+        // POST: Parts/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Price,Stock")] Product product)
+        public async Task<IActionResult> Create([Bind("Id,Name,Description,Price,Stock")] Part part)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(product);
+                _context.Add(part);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(product);
+            return View(part);
         }
 
-        // GET: Products/Edit/5
+        // GET: Parts/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -81,21 +81,21 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products.FindAsync(id);
-            if (product == null)
+            var part = await _context.Parts.FindAsync(id);
+            if (part == null)
             {
                 return NotFound();
             }
-            return View(product);
+            return View(part);
         }
 
-        // POST: Products/Edit/5
+        // POST: Parts/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Price,Stock")] Product product)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Price,Stock")] Part part)
         {
-            if (id != product.Id)
+            if (id != part.Id)
             {
                 return NotFound();
             }
@@ -104,12 +104,12 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
             {
                 try
                 {
-                    _context.Update(product);
+                    _context.Update(part);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ProductExists(product.Id))
+                    if (!PartExists(part.Id))
                     {
                         return NotFound();
                     }
@@ -120,10 +120,10 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(product);
+            return View(part);
         }
 
-        // GET: Products/Delete/5
+        // GET: Parts/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
@@ -131,34 +131,34 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
+            var part = await _context.Parts
                 .FirstOrDefaultAsync(m => m.Id == id);
-            if (product == null)
+            if (part == null)
             {
                 return NotFound();
             }
 
-            return View(product);
+            return View(part);
         }
 
-        // POST: Products/Delete/5
+        // POST: Parts/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var product = await _context.Products.FindAsync(id);
-            if (product != null)
+            var part = await _context.Parts.FindAsync(id);
+            if (part != null)
             {
-                _context.Products.Remove(product);
+                _context.Parts.Remove(part);
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ProductExists(int id)
+        private bool PartExists(int id)
         {
-            return _context.Products.Any(e => e.Id == id);
+            return _context.Parts.Any(e => e.Id == id);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

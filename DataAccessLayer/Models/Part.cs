@@ -15,5 +15,9 @@ namespace DataAccessLayer.Models
         public string Description { get; set; }
 
         public ICollection<Product> Products { get; } = new List<Product>();
+
+        public int Stock { get; set; }
+
+        public decimal Price { get; set; }
     }
 }
