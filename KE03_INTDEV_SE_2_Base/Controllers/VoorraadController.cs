@@ -212,16 +212,27 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
             {
                 foreach (var item in orderItems)
                 {
-                    var product = await _context.Products.FindAsync(item.Id);
-                    if (product != null && quantities.ContainsKey(item.Id))
+                    if (item.Type.ToLower() == "product")
                     {
-                        product.Stock += quantities[item.Id];
+                        var product = await _context.Products.FindAsync(item.Id);
+                        if (product != null && quantities.ContainsKey(item.Id))
+                        {
+                            product.Stock += quantities[item.Id];
+                        }
+                    }
+                    else if (item.Type.ToLower() == "part")
+                    {
+                        var part = await _context.Parts.FindAsync(item.Id);
+                        if (part != null && quantities.ContainsKey(item.Id))
+                        {
+                            part.Stock += quantities[item.Id];
+                        }
                     }
                 }
                 await _context.SaveChangesAsync();
                 HttpContext.Session.Remove("VoorraadItems");
             }
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "Home");
         }
 
         public class UpdateAmountModel
