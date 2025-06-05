@@ -1,0 +1,73 @@
+/* Video achtergrond stijlen */
+#bg-video {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    z-index: -1;
+    object-fit: cover;
+}
+
+/* Voorkom scrollen */
+body {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+/* Login achtergrond met overlay */
+.loginbackground {
+    background: rgba(0, 0, 0, 0.5); /* Donkere overlay over de video */
+    min-height: 100vh;
+    width: 100vw;
+}
+
+/* Fade-in animatie voor de login card */
+.fade-in {
+    animation: fadeIn 0.8s ease-in;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Extra stijlen voor form elementen */
+.form-control-lg {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+}
+
+.form-control-lg:focus {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+}
+
+.form-control-lg::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.btn-outline-light {
+    border-width: 2px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-outline-light:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
