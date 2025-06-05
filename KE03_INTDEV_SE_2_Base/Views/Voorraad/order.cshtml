@@ -1,0 +1,106 @@
+@{
+    ViewData["Title"] = "Bestellen";
+}
+
+    <div class="order-type-section">
+        <h2>Wat voor bestelling wil jij maken?</h2>
+        <div class="order-type-buttons">
+            <button class="btn btn-primary order-type-btn" data-type="normaal">Normaal</button>
+            <button class="btn btn-primary order-type-btn" data-type="bulk">Bulk
+                <div class="minimal-text">(Minimaal 3 producten)</div>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .order-container {
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+
+    .header-section {
+        margin-bottom: 40px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        padding: 20px;
+    }
+
+    .header-section h1 {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .nav-links {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        padding: 10px 0;
+    }
+
+    .nav-links a {
+        text-decoration: none;
+        color: #333;
+        padding: 5px 15px;
+        border-radius: 20px;
+    }
+
+    .nav-links a.active {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .nav-links a.uitloggen {
+        margin-left: auto;
+    }
+
+    .order-type-section {
+        text-align: center;
+        margin-top: 40px;
+    }
+
+    .order-type-section h2 {
+        margin-bottom: 30px;
+        font-size: 1.5em;
+    }
+
+    .order-type-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+    }
+
+    .order-type-btn {
+        padding: 20px 40px;
+        font-size: 1.2em;
+        min-width: 200px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .order-type-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .minimal-text {
+        font-size: 0.8em;
+        margin-top: 8px;
+        color: rgba(255, 255, 255, 0.9);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const orderButtons = document.querySelectorAll('.order-type-btn');
+        
+        orderButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const orderType = this.dataset.type;
+                // Hier kunnen we later de logica toevoegen voor het verwerken van de ordertype selectie
+            });
+        });
+    });
+</script>
