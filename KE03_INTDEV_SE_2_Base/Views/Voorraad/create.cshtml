@@ -1,0 +1,58 @@
+@using KE03_INTDEV_SE_2_Base.ViewModels
+@model List<VoorraadItemViewModel>
+
+<div class="container py-4">
+    <div class="card matrix-card shadow mb-4">
+        <div class="card-header bg-dark text-light">
+            <h5 class="mb-0">Voorraad Aanvullen</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="SubmitOrder" method="post">
+                @if (Model.Any())
+                {
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Huidige Voorraad</th>
+                                <th>Aantal Bijbestellen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.Name</td>
+                                    <td>@item.CurrentStock</td>
+                                    <td>
+                                        <input type="number" name="quantities[@item.Id]" 
+                                               class="form-control" style="width: 120px"
+                                               value="@item.OrderAmount" min="1" required />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fa-solid fa-plus"></i> Meer producten toevoegen
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fa-solid fa-check"></i> Voorraad Bijwerken
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <p>Geen producten geselecteerd.</p>
+                        <a asp-action="Index" class="btn btn-primary">
+                            <i class="fa-solid fa-plus"></i> Producten Selecteren
+                        </a>
+                    </div>
+                }
+            </form>
+        </div>
+    </div>
+</div>
