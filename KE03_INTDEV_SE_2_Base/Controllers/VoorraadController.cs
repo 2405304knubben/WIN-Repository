@@ -8,7 +8,7 @@ using KE03_INTDEV_SE_2_Base.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace KE03_INTDEV_SE_2_Base.Controllers
-{    
+{
     public class VoorraadController : Controller
     {
         private readonly ILogger<VoorraadController> _logger;
@@ -29,6 +29,16 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
             };
 
             return View(viewModel);
+        }
+
+        public IActionResult Order()
+        {
+            return View();
+        }
+
+        public IActionResult Create()
+        {
+            return View();
         }
     }
 }
