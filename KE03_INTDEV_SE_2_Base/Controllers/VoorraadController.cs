@@ -57,7 +57,8 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             Name = product.Name,
                             Type = "Product",
                             CurrentStock = product.Stock,
-                            OrderAmount = 1
+                            OrderAmount = 1,
+                            Price = product.Price  // Add this line
                         });
                     }
                 }
@@ -72,7 +73,8 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             Name = part.Name,
                             Type = "Part",
                             CurrentStock = part.Stock,
-                            OrderAmount = 1
+                            OrderAmount = 1,
+                            Price = 0  // Zet parts op prijs 0
                         });
                     }
                 }

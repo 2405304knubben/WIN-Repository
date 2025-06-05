@@ -16,7 +16,9 @@
                                 <th>Type</th>
                                 <th>Product</th>
                                 <th>Huidige Voorraad</th>
+                                <th>Prijs per stuk</th>
                                 <th>Aantal Bijbestellen</th>
+                                <th>Subtotaal</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -26,15 +28,25 @@
                                     <td>@item.Type</td>
                                     <td>@item.Name</td>
                                     <td>@item.CurrentStock</td>
-                                    
+                                    <td>€@item.Price.ToString("N2")</td>
                                     <td>
                                         <input type="number" name="quantities[@item.Id]" 
-                                               class="form-control" style="width: 120px"
+                                               class="form-control quantity-input" style="width: 120px"
+                                               data-price="@item.Price" data-id="@item.Id"
                                                value="@item.OrderAmount" min="1" required />
+                                    </td>
+                                    <td class="subtotal" data-id="@item.Id">
+                                        €@((item.Price * item.OrderAmount).ToString("N2"))
                                     </td>
                                 </tr>
                             }
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5" class="text-end"><strong>Totaal:</strong></td>
+                                <td id="orderTotal">€0.00</td>
+                            </tr>
+                        </tfoot>
                     </table>
 
                     <div class="d-flex justify-content-between mt-4">
@@ -74,6 +86,12 @@
                     <p class="mb-1"><strong>Matrix INC</strong></p>
                     <p class="mb-1">Overal en Nergens</p>
                 </div>
+                <div class="order-summary">
+                    <h6>Bestelling:</h6>
+                    <div id="modalOrderItems"></div>
+                    <hr>
+                    <p class="text-end"><strong>Totaal: </strong><span id="modalTotal">€0.00</span></p>
+                </div>
                 <p>Weet je zeker dat je deze bestelling wilt plaatsen?</p>
             </div>
             <div class="modal-footer">
@@ -86,7 +104,48 @@
 
 @section Scripts {
     <script>
+        function calculateTotals() {
+            let total = 0;
+            const orderItems = [];
+
+            document.querySelectorAll('.quantity-input').forEach(input => {
+                const quantity = parseInt(input.value);
+                const price = parseFloat(input.dataset.price.replace(',', '.'));  // Fix voor komma's
+                const id = input.dataset.id;
+                const subtotal = quantity * price;
+                
+                // Update subtotal met Nederlandse notatie
+                document.querySelector(`.subtotal[data-id="${id}"]`).textContent = 
+                    `€${subtotal.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                
+                total += subtotal;
+
+                const itemName = input.closest('tr').querySelector('td:nth-child(2)').textContent;
+                const formattedPrice = price.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                const formattedSubtotal = subtotal.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                orderItems.push(`${itemName} - ${quantity}x €${formattedPrice} = €${formattedSubtotal}`);
+            });
+
+            // Update totaal met Nederlandse notatie
+            document.getElementById('orderTotal').textContent = 
+                `€${total.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            return { total, orderItems };
+        }
+
+        // Add event listeners to quantity inputs
+        document.querySelectorAll('.quantity-input').forEach(input => {
+            input.addEventListener('change', calculateTotals);
+        });
+
         function showConfirmModal() {
+            const { total, orderItems } = calculateTotals();
+            
+            // Update modal content
+            document.getElementById('modalOrderItems').innerHTML = 
+                orderItems.map(item => `<p class="mb-1">${item}</p>`).join('');
+            document.getElementById('modalTotal').textContent = 
+                `€${total.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
             var modal = new bootstrap.Modal(document.getElementById('confirmModal'));
             modal.show();
         }
@@ -94,5 +153,8 @@
         function submitOrder() {
             document.querySelector('form').submit();
         }
+
+        // Initialize totals
+        calculateTotals();
     </script>
 }
