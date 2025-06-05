@@ -335,7 +335,11 @@
 
             products.forEach(product => {
                 let show = true; if (statusValue) {
-                    const status = product.querySelector('.product-status').classList.contains('status-instock') ? 'instock' : 'outofstock';
+                    const statusElement = product.querySelector('.product-status');
+                    let status = 'outofstock';
+                    if (statusElement.classList.contains('status-instock') || statusElement.classList.contains('status-lowstock')) {
+                        status = 'instock';
+                    }
                     if (status !== statusValue) show = false;
                 }
 
