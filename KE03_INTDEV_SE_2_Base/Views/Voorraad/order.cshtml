@@ -2,12 +2,13 @@
     ViewData["Title"] = "Bestellen";
 }
 
+<div class="order-container">
     <div class="order-type-section">
         <h2>Wat voor bestelling wil jij maken?</h2>
         <div class="order-type-buttons">
             <button class="btn btn-primary order-type-btn" data-type="normaal">Normaal</button>
             <button class="btn btn-primary order-type-btn" data-type="bulk">Bulk
-                <div class="minimal-text">(Minimaal 3 producten)</div>
+                <div class="minimal-text">(Minimaal 6 producten)</div>
             </button>
         </div>
     </div>
@@ -99,7 +100,7 @@
         orderButtons.forEach(button => {
             button.addEventListener('click', function() {
                 const orderType = this.dataset.type;
-                // Hier kunnen we later de logica toevoegen voor het verwerken van de ordertype selectie
+                window.location.href = `/Voorraad/Ordercreate?type=${orderType}`;
             });
         });
     });

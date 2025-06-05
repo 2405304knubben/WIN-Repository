@@ -39,6 +39,42 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         public IActionResult Create()
         {
             return View();
+        }        public async Task<IActionResult> Ordercreate(string type = "normaal")
+        {
+            ViewBag.OrderType = type;
+            var viewModel = new OrderEditViewModel();
+            
+            if (type == "normaal")
+            {
+                viewModel.AvailableItems = await _context.Products
+                    .Select(p => new OrderItemViewModel
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Stock = p.Stock,
+                        Price = p.Price
+                    })
+                    .ToListAsync();
+            }
+            else
+            {
+                viewModel.AvailableItems = await _context.Parts
+                    .Select(p => new OrderItemViewModel
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Stock = p.Stock,
+                        Price = p.Price
+                    })
+                    .ToListAsync();
+            }
+
+            return View(viewModel);
+        }
+
+        public IActionResult OrderConfirm()
+        {
+            return View();
         }
     }
 }
