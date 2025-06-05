@@ -2,6 +2,7 @@ using DataAccessLayer;
 using DataAccessLayer.Interfaces;
 using DataAccessLayer.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace KE03_INTDEV_SE_2_Base
 {
@@ -18,11 +19,27 @@ namespace KE03_INTDEV_SE_2_Base
                 options => options.UseSqlite("Data Source=MatrixInc.db"));
             builder.Services.AddControllersWithViews();
 
+            // Voeg sessie services toe
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
+
             // We registreren de repositories in de DI container
             builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<IPartRepository, PartRepository>();
+
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/Account/Login";
+                    options.LogoutPath = "/Account/Logout";
+                    options.AccessDeniedPath = "/Account/AccessDenied";
+                });
 
             var app = builder.Build();
 
@@ -48,12 +65,13 @@ namespace KE03_INTDEV_SE_2_Base
             app.UseStaticFiles();
 
             app.UseRouting();
-
+            app.UseSession(); // Voeg dit toe voor UseAuthentication
+            app.UseAuthentication(); // Add this before UseAuthorization
             app.UseAuthorization();
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=Account}/{action=Index}/{id?}"); // Verander Home naar Account
 
             app.Run();
         }

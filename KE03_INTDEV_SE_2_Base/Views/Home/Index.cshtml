@@ -3,11 +3,13 @@
     ViewData["Title"] = "Dashboard";
 }
 
+<link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+
 <div class="dashboard">
     <!-- Cards -->
     <div class="row">
         <div class="col-md-4">
-            <div class="card stats-card" style="cursor: pointer" onclick="window.location.href = '@Url.Action("Index", "Product")'">
+            <div class="card stats-card fade-in" style="cursor: pointer" onclick="window.location.href = '@Url.Action("Index", "Bestellingen")'">
                 <div class="card-body">
                     <h5 class="card-title">Totale Bestellingen</h5>
                     <p class="card-text" id="totalOrders">@Model.TotalOrders</p>
@@ -15,7 +17,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card stats-card" style="cursor: pointer" onclick="window.location.href = '@Url.Action("Index", "Product")'">
+            <div class="card stats-card fade-in" style="cursor: pointer" onclick="window.location.href = '@Url.Action("Index", "Product")'">
                 <div class="card-body">
                     <h5 class="card-title">Totale Omzet</h5>
                     <p class="card-text" id="totalRevenue">€@Model.TotalRevenue.ToString("N2")</p>
@@ -23,7 +25,7 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="card stats-card" style="cursor: pointer" onclick="window.location.href = '@Url.Action("Index", "Customers")'">
+            <div class="card stats-card fade-in" style="cursor: pointer" onclick="window.location.href = '@Url.Action("Index", "Customers")'">
                 <div class="card-body">
                     <h5 class="card-title">Totaal Aantal Klanten</h5>
                     <p class="card-text" id="totalCustomers">@Model.TotalCustomers</p>
@@ -34,7 +36,7 @@
 
     <!-- Date Filter -->
     <div class="date-filter my-4">
-        <div class="d-flex align-items-end gap-3">
+        <div class="d-flex align-items-end gap-3 fade-in2 ">
             <div>
                 <label for="startDate" class="form-label">Start Datum</label>
                 <input type="date" id="startDate" class="form-control" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
@@ -59,7 +61,7 @@
     <!-- Charts -->
     <div class="row mt-4">
         <div class="col-md-6">
-            <div class="card">
+            <div class="card slide-in-left">
                 <div class="card-body">
                     <h5 class="card-title">Dagelijkse Bestellingen</h5>
                     <canvas id="ordersChart"></canvas>
@@ -67,7 +69,7 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card">
+            <div class="card slide-in-right">
                 <div class="card-body">
                     <h5 class="card-title">Dagelijkse Omzet</h5>
                     <canvas id="revenueChart"></canvas>
