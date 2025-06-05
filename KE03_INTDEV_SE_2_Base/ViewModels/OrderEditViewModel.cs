@@ -34,11 +34,4 @@ namespace KE03_INTDEV_SE_2_Base.ViewModels
         public decimal Price { get; set; }
         public decimal TotalPrice => Quantity * Price;
     }
-    public class OrderItemViewModel
-    {
-        public int Id { get; set; }
-        public required string Name { get; set; }
-        public int Stock { get; set; }
-        public decimal Price { get; set; }
-    }
 }

@@ -40,9 +40,9 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
 
         public IActionResult Create(int id, string type = "product") // Add type parameter
         {
-            var orderItems = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems") 
+            var orderItems = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems")
                 ?? new List<VoorraadItemViewModel>();
-            
+
             // Voeg het geselecteerde product toe als het nog niet in de lijst staat
             if (!orderItems.Any(x => x.Id == id))
             {
@@ -74,11 +74,11 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             Type = "Part",
                             CurrentStock = part.Stock,
                             OrderAmount = 1,
-                            Price = part.Price  
+                            Price = part.Price
                         });
                     }
                 }
-                
+
                 HttpContext.Session.SetObjectAsJson("VoorraadItems", orderItems);
             }
 
@@ -103,9 +103,9 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         {
             // This is for ordering new stock
             ViewBag.Products = _context.Products
-                .Select(p => new BijbestellenViewModel 
-                { 
-                    ProductId = p.Id, 
+                .Select(p => new BijbestellenViewModel
+                {
+                    ProductId = p.Id,
                     ProductName = p.Name,
                     CurrentStock = p.Stock,
                     OrderAmount = 0
@@ -117,7 +117,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         public IActionResult AddToOrder(int id, string type)
         {
             var orderItems = HttpContext.Session.GetObjectFromJson<List<OrderItemViewModel>>("OrderItems") ?? new List<OrderItemViewModel>();
-            
+
             if (type == "product")
             {
                 var product = _context.Products.Find(id);
@@ -156,9 +156,9 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         [HttpPost]
         public IActionResult AddToVoorraad(int id, string type)
         {
-            var orderItems = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems") 
+            var orderItems = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems")
                 ?? new List<VoorraadItemViewModel>();
-            
+
             // Check of item al in lijst zit
             if (!orderItems.Any(x => x.Id == id && x.Type == type))
             {
@@ -246,6 +246,52 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         public class RemoveItemModel
         {
             public int Id { get; set; }
+        }        [HttpGet]
+        public async Task<IActionResult> Ordercreate(string type = "normaal")
+        {
+            // Initialize or get the session variable
+            var orderItems = HttpContext.Session.GetObjectFromJson<List<OrderItemViewModel>>("OrderItems") 
+                ?? new List<OrderItemViewModel>();
+            
+            ViewBag.OrderType = type;
+            var viewModel = new OrderEditViewModel
+            {
+                OrderDate = DateTime.Now,
+                AvailableItems = await (type.ToLower() == "normaal" ?
+                    _context.Products
+                        .Select(p => new OrderItemViewModel
+                        {
+                            Id = p.Id,
+                            Name = p.Name,
+                            Stock = p.Stock,
+                            Price = p.Price
+                        })
+                        .ToListAsync() :
+                    _context.Parts
+                        .Select(p => new OrderItemViewModel
+                        {
+                            Id = p.Id,
+                            Name = p.Name,
+                            Stock = p.Stock,
+                            Price = p.Price
+                        })
+                        .ToListAsync())
+            };
+
+            // Store the viewModel in session
+            HttpContext.Session.SetObjectAsJson("CurrentOrder", viewModel);
+
+            return View(viewModel);
+        }
+
+        public IActionResult OrderConfirm()
+        {
+            var viewModel = HttpContext.Session.GetObjectFromJson<OrderEditViewModel>("CurrentOrder");
+            if (viewModel == null)
+            {
+                return RedirectToAction(nameof(Ordercreate));
+            }
+            return View(viewModel);
         }
     }
 }
