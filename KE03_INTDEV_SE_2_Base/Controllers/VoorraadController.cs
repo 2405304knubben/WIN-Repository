@@ -209,32 +209,46 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         [HttpPost]
         public async Task<IActionResult> SubmitOrder(Dictionary<int, int> quantities)
         {
-            var orderItems = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems");
-            if (orderItems != null)
+            try
             {
-                foreach (var item in orderItems)
+                var orderItems = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems");
+                if (orderItems != null)
                 {
-                    if (item.Type.ToLower() == "product")
+                    foreach (var item in orderItems)
                     {
-                        var product = await _context.Products.FindAsync(item.Id);
-                        if (product != null && quantities.ContainsKey(item.Id))
+                        if (item.Type?.ToLower() == "product")
                         {
-                            product.Stock += quantities[item.Id];
+                            var product = await _context.Products.FindAsync(item.Id);
+                            if (product != null && quantities.ContainsKey(item.Id))
+                            {
+                                var oldStock = product.Stock;
+                                product.Stock += quantities[item.Id];
+                                _logger.LogInformation($"Product {product.Name}: Stock updated from {oldStock} to {product.Stock}");
+                            }
+                        }
+                        else if (item.Type?.ToLower() == "part")
+                        {
+                            var part = await _context.Parts.FindAsync(item.Id);
+                            if (part != null && quantities.ContainsKey(item.Id))
+                            {
+                                var oldStock = part.Stock;
+                                part.Stock += quantities[item.Id];
+                                _logger.LogInformation($"Part {part.Name}: Stock updated from {oldStock} to {part.Stock}");
+                            }
                         }
                     }
-                    else if (item.Type.ToLower() == "part")
-                    {
-                        var part = await _context.Parts.FindAsync(item.Id);
-                        if (part != null && quantities.ContainsKey(item.Id))
-                        {
-                            part.Stock += quantities[item.Id];
-                        }
-                    }
+
+                    var changes = await _context.SaveChangesAsync();
+                    _logger.LogInformation($"Database updated successfully. {changes} records modified.");
+                    HttpContext.Session.Remove("VoorraadItems");
                 }
-                await _context.SaveChangesAsync();
-                HttpContext.Session.Remove("VoorraadItems");
+                return RedirectToAction("Index", "Home");
             }
-            return RedirectToAction("Index", "Home");
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error updating stock: {ex.Message}");
+                throw;
+            }
         }
 
         public class UpdateAmountModel
