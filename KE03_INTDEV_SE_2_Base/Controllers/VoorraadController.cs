@@ -74,7 +74,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             Type = "Part",
                             CurrentStock = part.Stock,
                             OrderAmount = 1,
-                            Price = 0  // Zet parts op prijs 0
+                            Price = part.Price  
                         });
                     }
                 }
