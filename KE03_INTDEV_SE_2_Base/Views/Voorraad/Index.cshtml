@@ -22,7 +22,7 @@
                 </select>
             </div>
             <div class="actions">
-                <a asp-action="Create" class="btn btn-primary">Nieuw Product</a>
+                <a asp-controller="Product" asp-action="Create" class="btn btn-primary">Nieuw Product</a>
             </div>
         </div>
     </div>
@@ -33,8 +33,8 @@
             <div class="product-card" data-type="product">
                 <div class="product-header">
                     <div class="product-id">@item.Name</div>
-                    <div class="product-status @(item.Stock > 0 ? "status-instock" : "status-outofstock")">
-                        @(item.Stock > 0 ? "In voorraad" : "Niet op voorraad")
+                    <div class="product-status @(item.Stock == 0 ? "status-outofstock" : (item.Stock < 15 ? "status-lowstock" : "status-instock"))">
+                        @(item.Stock == 0 ? "Niet op voorraad" : (item.Stock < 15 ? "Bijna uitverkocht" : "In voorraad"))
                     </div>
                 </div>
                 <div class="product-content">
@@ -82,8 +82,8 @@
             <div class="product-card" data-type="part">
                 <div class="product-header">
                     <div class="product-id">@item.Name</div>
-                    <div class="product-status @(item.Stock > 0 ? "status-instock" : "status-outofstock")">
-                        @(item.Stock > 0 ? "In voorraad" : "Niet op voorraad")
+                    <div class="product-status @(item.Stock == 0 ? "status-outofstock" : (item.Stock < 15 ? "status-lowstock" : "status-instock"))">
+                        @(item.Stock == 0 ? "Niet op voorraad" : (item.Stock < 15 ? "Bijna uitverkocht" : "In voorraad"))
                     </div>
                 </div>
                 <div class="product-content">
@@ -214,6 +214,11 @@
     .status-instock {
         background-color: #d4edda;
         color: #155724;
+    }
+
+    .status-lowstock {
+        background-color: #ffecb5;
+        color: #664d03;
     }
 
     .status-outofstock {
