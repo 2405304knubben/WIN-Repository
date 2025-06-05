@@ -1,0 +1,130 @@
+@model KE03_INTDEV_SE_2_Base.ViewModels.OrderEditViewModel
+
+@{
+    ViewData["Title"] = "Bestelling bevestigen";
+    var orderType = ViewBag.OrderType;
+    var isNormaal = orderType == "normaal";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-dark text-white">
+            <h2>@(isNormaal ? "Normale" : "Bulk") Bestelling Bevestigen</h2>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>@(isNormaal ? "Product" : "Onderdeel")</th>
+                            <th>Aantal</th>
+                            <th>Prijs per stuk</th>
+                            <th>Totaal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderItemsList">
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-end"><strong>Totaal:</strong></td>
+                            <td id="totalPrice">€0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="mt-4">
+                <button type="button" class="btn btn-success" onclick="confirmOrder()">Bestelling Bevestigen</button>
+                <a href="javascript:history.back()" class="btn btn-secondary">Terug</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successModalLabel">Bestelling Geplaatst</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Uw bestelling is succesvol geplaatst!</p>
+                <div id="orderSummary">
+                    <!-- Order summary will be inserted here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="/Voorraad" class="btn btn-primary">Terug naar Voorraad</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const orderItems = JSON.parse('@Html.Raw(ViewBag.OrderItems)');
+            displayOrderItems(orderItems);
+        });
+
+        function displayOrderItems(items) {
+            const tbody = document.getElementById('orderItemsList');
+            let total = 0;
+
+            items.forEach(item => {
+                const tr = document.createElement('tr');
+                const subtotal = item.quantity * item.price;
+                total += subtotal;
+
+                tr.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>€${item.price.toFixed(2)}</td>
+                    <td>€${subtotal.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('totalPrice').textContent = `€${total.toFixed(2)}`;
+        }
+
+        function confirmOrder() {
+            const orderItems = JSON.parse('@Html.Raw(ViewBag.OrderItems)');
+            fetch('/Voorraad/OrderSuccess', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    orderItems: orderItems,
+                    orderType: '@orderType'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update order summary in modal
+                    const summaryHtml = `
+                        <div class="mt-3">
+                            <p><strong>Aantal items:</strong> ${orderItems.length}</p>
+                            <p><strong>Totaalbedrag:</strong> €${document.getElementById('totalPrice').textContent.replace('€', '')}</p>
+                            <p><strong>Besteldatum:</strong> ${new Date().toLocaleDateString('nl-NL')}</p>
+                        </div>
+                    `;
+                    document.getElementById('orderSummary').innerHTML = summaryHtml;
+                    
+                    // Show success modal
+                    new bootstrap.Modal(document.getElementById('successModal')).show();
+                } else {
+                    alert('Er is een fout opgetreden bij het plaatsen van de bestelling.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Er is een fout opgetreden bij het plaatsen van de bestelling.');
+            });
+        }
+    </script>
+}
