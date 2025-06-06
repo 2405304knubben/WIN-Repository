@@ -1,0 +1,370 @@
+@model KE03_INTDEV_SE_2_Base.ViewModels.OrderEditViewModel
+    @{
+        ViewData["Title"] = "Bestellingslijst";
+        var orderType = ViewBag.OrderType;
+        var isNormaal = orderType == "normaal";
+        var minItems = isNormaal ? 1 : 6;
+    }
+
+<video autoplay loop muted playsinline id="bg-video">
+    <source src="/Videos/matrix.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
+
+    <div class="order-container">
+        <h2 class="order-title">@(isNormaal ? "Normale Bestelling" : "Bulk Bestelling") @(isNormaal ? "" : $"(Minimaal {minItems} producten)")</h2>
+        @{
+            TempData["OrderType"] = orderType;
+        }
+        <div class="add-product-section">
+            <div class="add-product-controls">
+                <select id="productSelect" class="form-select">
+                    <option value="" selected disabled>Selecteer een @(isNormaal ? "product" : "onderdeel")</option>
+                    @foreach (var item in Model.AvailableItems)
+                    {
+                        <option value="@item.Id" 
+                                data-name="@item.Name" 
+                                data-stock="@item.Stock" 
+                                data-price="@item.Price.ToString("F2")">
+                            @item.Name (@(item.Stock > 0 ? $"{item.Stock} op voorraad" : "Niet op voorraad"))
+                        </option>
+                    }
+                </select>
+                <button class="btn btn-success" id="addProduct">Toevoegen</button>
+            </div>
+            <div class="warning-message" id="selectWarning">Selecteer eerst een @(isNormaal ? "product" : "onderdeel")</div>
+        </div>
+        <div class="warning-message" id="warningMessage">Minimaal @minItems stuks vereist voor bestelling.</div>
+
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>@(isNormaal ? "Product" : "Onderdeel")</th>
+                        <th>Voorraad</th>
+                        <th>Prijs per stuk</th>
+                        <th>Aantal</th>
+                        <th>Verwijderen</th>
+                    </tr>
+                </thead>
+                <tbody id="orderItems">
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="2"></td>
+                        <td><strong>Totaal:</strong></td>
+                        <td colspan="2" id="totalPrice">€0.00</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="order-actions">
+            <button class="btn btn-primary btn-lg" id="submitOrder" data-min-items="@minItems" disabled>Bestellen</button>
+        </div>
+    </div>
+
+    <style>
+        .order-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .add-product-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .add-product-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .warning-message {
+            color: #dc3545;
+            font-weight: 500;
+            margin-top: 5px;
+            display: none;
+        }
+
+        #productSelect {
+            flex: 1;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+        }
+
+        .table {
+            width: 100%;
+            margin-bottom: 1rem;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+            padding: 12px 16px;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .table td {
+            padding: 16px;
+            vertical-align: middle;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .product-info {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .price-info {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .stock-info {
+            font-weight: 500;
+        }
+
+        .stock-info.in-stock {
+            color: #28a745;
+        }
+
+        .stock-info.out-of-stock {
+            color: #dc3545;
+        }
+
+        .reorder-needed {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .out-of-stock-row {
+            background-color: #fff9f9;
+        }
+
+        .quantity-input {
+            width: 80px;
+            text-align: center;
+            padding: 6px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+        }
+
+        .quantity-input:disabled {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .delete-item {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #dc3545;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 16px;
+        }
+
+        .delete-item:hover {
+            background-color: #c82333;
+        }
+
+        .total-row {
+            font-size: 1.1em;
+        }
+
+        .total-row td {
+            border-top: 2px solid #dee2e6;
+        }
+
+        #totalPrice {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .order-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1.1em;
+            border-radius: 6px;
+        }
+
+        .btn-primary:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .btn-primary:not(:disabled):hover {
+            background-color: #0056b3;
+        }
+
+        .stock-info.out-of-stock {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const orderItems = new Map();
+            const productSelect = document.getElementById('productSelect');
+            const addButton = document.getElementById('addProduct');
+            const orderItemsContainer = document.getElementById('orderItems');
+            const selectWarning = document.getElementById('selectWarning');
+            const minItems = parseInt(document.getElementById('submitOrder').dataset.minItems);
+
+            addButton.addEventListener('click', function() {
+                const option = productSelect.selectedOptions[0];
+                if (!option || !option.value) {
+                    selectWarning.style.display = 'block';
+                    return;
+                }
+                selectWarning.style.display = 'none';
+
+                const id = option.value;
+                if (orderItems.has(id)) {
+                    const input = document.querySelector(`input[data-id="${id}"]`);
+                    input.value = parseInt(input.value) + 1;
+                    input.dispatchEvent(new Event('change'));
+                    return;
+                }
+
+                const name = option.dataset.name;
+                const stock = parseInt(option.dataset.stock);
+                const price = parseFloat(option.dataset.price);
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="product-info">
+                        <span>${name}</span>
+                    </td>
+                    <td class="stock-info ${stock > 0 ? 'in-stock' : 'out-of-stock'}">
+                        ${stock > 0 ? 
+                            `${stock} beschikbaar` : 
+                            '<span class="reorder-needed">Wordt bijbesteld</span>'}
+                    </td>
+                    <td class="price-info">€${price.toFixed(2)}</td>
+                    <td>
+                        <div class="quantity-control">
+                            <input type="number" value="1" min="1" 
+                                   class="form-control quantity-input" 
+                                   data-id="${id}"
+                                   data-price="${price}"
+                                   title="${stock === 0 ? 'Dit item wordt bijbesteld' : ''}">
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn btn-danger btn-sm delete-item" data-id="${id}">✕</button>
+                    </td>
+                `;
+
+                orderItems.set(id, { name, stock, price });
+                orderItemsContainer.appendChild(row);
+
+                const input = row.querySelector('.quantity-input');
+                input.addEventListener('change', updateTotals);
+
+                const deleteBtn = row.querySelector('.delete-item');
+                deleteBtn.addEventListener('click', function() {
+                    orderItems.delete(id);
+                    row.remove();
+                    updateTotals();
+                });
+
+                updateTotals();
+                productSelect.value = '';
+            });
+
+            function updateTotals() {
+                let total = 0;
+                let totalItems = 0;
+                document.querySelectorAll('.quantity-input').forEach(input => {
+                    const price = parseFloat(input.dataset.price);
+                    const quantity = parseInt(input.value) || 0;
+                    total += price * quantity;
+                    totalItems += quantity;
+                });
+                
+                document.getElementById('totalPrice').textContent = '€' + total.toFixed(2);
+                
+                const submitButton = document.getElementById('submitOrder');
+                if (totalItems < minItems) {
+                    submitButton.disabled = true;
+                    submitButton.title = `Minimaal ${minItems} items vereist`;
+                    warningMessage.style.display = 'block';
+                } else {
+                    submitButton.disabled = false;
+                    submitButton.title = '';
+                    warningMessage.style.display = 'none';
+                }
+            }
+
+            document.getElementById('submitOrder').addEventListener('click', function() {
+                const orderItems = [];
+                document.querySelectorAll('.quantity-input').forEach(input => {
+                    const quantity = parseInt(input.value) || 0;
+                    if (quantity > 0) {
+                        const id = input.dataset.id;
+                        orderItems.push({ id, quantity });
+                    }
+                });
+
+                // Create a form element
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/Voorraad/OrderConfirm';
+
+                // Add order items as hidden input
+                const orderItemsInput = document.createElement('input');
+                orderItemsInput.type = 'hidden';
+                orderItemsInput.name = 'orderItems';
+                orderItemsInput.value = JSON.stringify(orderItems);
+                form.appendChild(orderItemsInput);
+
+                // Add order type as hidden input
+                const orderTypeInput = document.createElement('input');
+                orderTypeInput.type = 'hidden';
+                orderTypeInput.name = 'orderType';
+                orderTypeInput.value = '@orderType';
+                form.appendChild(orderTypeInput);
+
+                // Add the form to the document and submit it
+                document.body.appendChild(form);
+                form.submit();
+            });
+        });
+    </script>

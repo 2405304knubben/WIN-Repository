@@ -1,0 +1,58 @@
+﻿@model KE03_INTDEV_SE_2_Base.ViewModels.OrderEditViewModel
+
+<video autoplay loop muted playsinline id="bg-video">
+    <source src="/Videos/matrix.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
+
+<div class="container py-4">
+    <h2 class="text-center matrix-header mb-5">Order verwijderen</h2>
+    <div class="card matrix-card shadow mb-4">
+        <div class="card-header bg-dark text-light d-flex justify-content-between align-items-center">
+            <span><i class="fa-solid fa-calendar"></i> @Model.OrderDate.ToString("dd-MM-yyyy")</span>
+        </div>
+        <div class="card-body bg-dark text-light">
+            <div class="alert alert-danger">
+                <i class="fa-solid fa-exclamation-triangle"></i> Weet u zeker dat u deze order wilt verwijderen?
+            </div>
+            <table class="table table-dark table-striped">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Aantal</th>
+                        <th>Prijs per stuk</th>
+                        <th>Totaal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var product in Model.OrderProducts)
+                    {
+                        <tr>
+                            <td>@product.ProductName</td>
+                            <td>@product.Quantity</td>
+                            <td>@product.Price.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"))</td>
+                            <td>@product.TotalPrice.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"))</td>
+                        </tr>
+                    }                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-end"><strong>Totaal:</strong></td>
+                        <td>@Model.OrderProducts.Sum(p => p.TotalPrice).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"))</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <form asp-action="Delete" class="mt-4">
+                <input type="hidden" asp-for="Id" />
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fa-solid fa-trash"></i> Verwijderen
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fa-solid fa-arrow-left"></i> Terug naar overzicht
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

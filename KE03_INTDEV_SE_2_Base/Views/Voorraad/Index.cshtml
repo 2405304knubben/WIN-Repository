@@ -1,0 +1,362 @@
+@model KE03_INTDEV_SE_2_Base.ViewModels.ProductOverviewViewModel
+@{
+    ViewData["Title"] = "Productoverzicht";
+}
+
+<video autoplay loop muted playsinline id="bg-video">
+    <source src="/Videos/matrix.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
+
+<div class="product-overview">
+    <div class="header-section mb-4">
+        <h1 class="mb-3">Voorraad Producten en Onderdelen</h1>        
+        <div class="controls-row">
+            <div class="filters"> 
+                <select class="form-select" id="statusFilter">
+                    <option value="" disabled selected>Filter Status</option>
+                    <option value="">Alles</option>
+                    <option value="instock">In voorraad</option>
+                    <option value="outofstock">Niet op voorraad</option>
+                </select>
+                <select class="form-select" id="typeFilter">
+                    <option value="" disabled selected>Filter Type</option>
+                    <option value="">Alles</option>
+                    <option value="product">Product</option>
+                    <option value="part">Onderdeel</option>
+                </select>
+            </div>
+            <div class="actions">
+                <a asp-controller="Product" asp-action="Create" class="btn btn-success">Nieuw Product</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="products-container">
+        @foreach (var item in Model.Products)
+        {
+            <div class="product-card" data-type="product">
+                <div class="product-header">
+                    <div class="product-id">@item.Name</div>
+                    <div class="product-status @(item.Stock == 0 ? "status-outofstock" : (item.Stock < 15 ? "status-lowstock" : "status-instock"))">
+                        @(item.Stock == 0 ? "Niet op voorraad" : (item.Stock < 15 ? "Bijna uitverkocht" : "In voorraad"))
+                    </div>
+                </div>
+                <div class="product-content">
+                    <div class="product-description">@item.Description</div>
+                    <div class="product-details">
+                        <div class="price-info">
+                            <span class="label">Prijs</span>
+                            <span class="value">€@item.Price.ToString("N2")</span>
+                        </div>
+                        <div class="stock-info">
+                            <span class="label">Voorraad</span>
+                            <span class="value">@item.Stock stuks</span>
+                        </div>
+                    </div>
+                    @if (item.Parts.Any())
+                    {
+                        <div class="parts-section">
+                            <div class="parts-header">
+                                <span class="label">Gerelateerde Onderdelen:</span>
+                            </div>
+                            <div class="parts-list">
+                                @foreach (var part in item.Parts)
+                                {
+                                    <div class="part-item">
+                                        <span class="part-name">@part.Name</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="product-actions">
+                    <a asp-controller="Product" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning"><i
+                            class="fa-solid fa-pen"></i></a>
+                    <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info"><i
+                            class="fa-solid fa-info"></i></a>
+                    <a asp-controller="Product" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger"><i
+                            class="fa-solid fa-trash"></i></a>
+                    <a asp-controller="Voorraad" asp-action="Create" asp-route-id="@item.Id" class="btn btn-sm btn-success"><i
+                            class="fa-solid fa-truck"></i></a>
+                </div>
+            </div>
+        }
+
+        @foreach (var item in Model.Parts)
+        {
+            <div class="product-card" data-type="part">
+                <div class="product-header">
+                    <div class="product-id">@item.Name</div>
+                    <div class="product-status @(item.Stock == 0 ? "status-outofstock" : (item.Stock < 15 ? "status-lowstock" : "status-instock"))">
+                        @(item.Stock == 0 ? "Niet op voorraad" : (item.Stock < 15 ? "Bijna uitverkocht" : "In voorraad"))
+                    </div>
+                </div>
+                <div class="product-content">
+                    <div class="product-description">@item.Description</div>
+                    <div class="product-details">
+                        <div class="usage-info">
+                            <span class="label">Prijs:</span>
+                            <div class="parts-list">
+                                <span class="value">€@item.Price.ToString("N2")</span>
+                            </div>
+                        </div>
+                        <div class="stock-info">
+                            <span class="label">Voorraad</span>
+                            <span class="value">@item.Stock stuks</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="product-actions">
+                    <a asp-controller="Part" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning"><i
+                            class="fa-solid fa-pen"></i></a>
+                    <a asp-controller="Part" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info"><i
+                            class="fa-solid fa-info"></i></a>
+                    <a asp-controller="Part" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger"><i
+                            class="fa-solid fa-trash"></i></a>
+                    <a asp-controller="Voorraad" asp-action="Create" asp-route-id="@item.Id" asp-route-type="part" class="btn btn-sm btn-success">
+                        <i class="fa-solid fa-truck"></i></a>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .product-overview {
+        padding: 20px;
+        background-color: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    .header-section {
+        position: sticky;
+        top: 0;
+        background-color: #f8f9fa;
+        z-index: 100;
+        padding: 10px 0;
+    }
+
+    .controls-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .filters {
+        display: flex;
+        gap: 15px;
+    }
+
+    .form-select {
+        min-width: 150px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        background-color: white;
+    }
+
+    .products-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px 0;
+    }
+
+    .product-card {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        gap: 20px;
+        align-items: stretch;
+        min-height: 150px;
+    }
+
+    .product-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .product-header {
+        flex: 0 0 200px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding-right: 20px;
+        border-right: 1px solid #dee2e6;
+    }
+
+    .product-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        padding: 0 20px;
+    }
+
+    .product-id {
+        font-weight: bold;
+        font-size: 1.2em;
+        color: #2c3e50;
+    }
+
+    .product-status {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: 500;
+        text-align: center;
+        width: fit-content;
+    }
+
+    .status-instock {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-lowstock {
+        background-color: #ffecb5;
+        color: #664d03;
+    }
+
+    .status-outofstock {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .product-description {
+        color: #6c757d;
+        font-size: 0.95em;
+        line-height: 1.5;
+    }
+
+    .product-details {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 12px;
+    }
+
+    .price-info,
+    .stock-info {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .product-details {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .label {
+        font-size: 0.85em;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .value {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 1.1em;
+    }
+
+    .parts-section {
+        margin-top: auto;
+    }
+
+    .parts-header {
+        margin-bottom: 8px;
+    }
+
+    .parts-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .part-item {
+        background-color: #e9ecef;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.9em;
+        color: #495057;
+    }
+
+    .product-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        justify-content: center;
+        padding-left: 20px;
+        border-left: 1px solid #dee2e6;
+    }
+
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+    }
+
+    .btn-sm i {
+        font-size: 0.9em;
+    }
+
+    .btn-warning {
+        background-color: #ffc107;
+        border-color: #ffc107;
+        color: #212529;
+    }
+
+    .btn-info {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+        color: white;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const statusFilter = document.getElementById('statusFilter');
+        const typeFilter = document.getElementById('typeFilter');
+        const products = document.querySelectorAll('.product-card');
+
+        function applyFilters() {
+            const statusValue = statusFilter.value;
+            const typeValue = typeFilter.value;
+
+            products.forEach(product => {
+                let show = true; if (statusValue) {
+                    const statusElement = product.querySelector('.product-status');
+                    let status = 'outofstock';
+                    if (statusElement.classList.contains('status-instock') || statusElement.classList.contains('status-lowstock')) {
+                        status = 'instock';
+                    }
+                    if (status !== statusValue) show = false;
+                }
+
+                if (typeValue) {
+                    const type = product.dataset.type;
+                    if (type !== typeValue) show = false;
+                }
+
+                product.style.display = show ? 'flex' : 'none';
+            });
+        }
+
+        statusFilter.addEventListener('change', applyFilters);
+        typeFilter.addEventListener('change', applyFilters);
+    });
+</script>

@@ -15,8 +15,8 @@ namespace DataAccessLayer.Models
 
         public int CustomerId { get; set; }
         
-        public Customer Customer { get; set; } = null!;
+        public Customer Customer { get; set; } = null!;        public ICollection<OrderProduct> OrderProducts { get; set; } = new List<OrderProduct>();
 
-        public ICollection<Product> Products { get; } = new List<Product>();
+        public decimal TotalPrice => OrderProducts.Sum(op => op.Product.Price * op.Aantal);
     }
 }

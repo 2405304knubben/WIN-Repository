@@ -1,28 +1,278 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model KE03_INTDEV_SE_2_Base.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="alert-info">
-    <p class="p-1">
-        Dit project kun je gebruiken als startpunt voor de groeps inleveropdracht: <a href="https://moodle.zuyd.nl/mod/resource/view.php?id=1262065">KE03_INTDEV_SE_2</a>
+<link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
 
-        <ul>
-            <li>Wat ga je maken: Je realiseert samen met je casus groep een webapplicatie, een “admin-achtige” webapplicatie waarbij je gebruik maakt van ASP.NET Core MVC architecture pattern. De belangrijkste hoofdprestatie en functionele eisen van deze applicatie zijn als volgt: Het back-office team van Matrix Inc. kan de producten en bijbehorende data en details beheren in deze webapplicatie, zodat de interne en externe klanten altijd over de juiste informatie beschikken.</li>
-            
-            <li>
-                Hoe ga je dit maken?<br />
-                - Groepsopdracht.<br />
-                - Pas de principes van HCI toe (bijv. Paper prototyping, design principles etc…)<br />
-                - Jullie web applicatie maakt gebruik van het MVC architectural pattern.<br />                
-                - Je werkt met je casusgroep op 1 github repository. Tip: je kunt met branches en pull requests werken<br />
-                - Jullie applicatie maakt gebruik van responsive design, meerdere html elementen en toegepast css styles.<br />
-                - Jullie applicatie maakt gebruik van de aangeleverde data access layer voor een snelle start. Deze mag je zelf uitbreiden of aanpassen indien gewenst.<br />
-            </li>
-            <li>
-                Je krijgt een dal (data access layer) meegeleverd. Qua inhoud is die niet perfect gevuld, maar qua structuur biedt die voldoende om een mooi bestel systeem te kunnen maken. <br />
-                In het voorbeeld wordt nog geen gebruik gemaakt van de repository classes, maar direct van de db context. Het is aan jezelf om aan te passen en te kiezen hoe je dit kunt wil toepassen en/of oplossen.<br />
-                Maar mis je iets, je bent vrij om alles naar wens aan te passen! Ben creatief!
-            </li>
-        </ul>
-    </p>
+<video autoplay loop muted playsinline id="bg-video">
+    <source src="/Videos/matrix.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
+
+<div class="dashboard">
+    <!-- Cards -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card stats-card fade-in" style="cursor: pointer" onclick="window.location.href = '@Url.Action("Index", "Bestellingen")'">
+                <div class="card-body">
+                    <h5 class="card-title">Totale Bestellingen</h5>
+                    <p class="card-text" id="totalOrders">@Model.TotalOrders</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stats-card fade-in" style="cursor: pointer" onclick="window.location.href = '@Url.Action("Index", "Product")'">
+                <div class="card-body">
+                    <h5 class="card-title">Totale Omzet</h5>
+                    <p class="card-text" id="totalRevenue">€@Model.TotalRevenue.ToString("N2")</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stats-card fade-in" style="cursor: pointer" onclick="window.location.href = '@Url.Action("Index", "Customers")'">
+                <div class="card-body">
+                    <h5 class="card-title">Totaal Aantal Klanten</h5>
+                    <p class="card-text" id="totalCustomers">@Model.TotalCustomers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Date Filter -->
+    <div class="date-filter my-4">
+        <div class="d-flex align-items-end gap-3 fade-in2 ">
+            <div>
+                <label for="startDate" class="form-label">Start Datum</label>
+                <input type="date" id="startDate" class="form-control" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
+            </div>
+            <div>
+                <label for="endDate" class="form-label">Eind Datum</label>
+                <input type="date" id="endDate" class="form-control" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
+            </div>
+            <div>
+                <button id="updateStats" class="btn btn-success">Update</button>
+            </div>
+            <div class="ms-auto">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-secondary" data-period="7">Week</button>
+                    <button type="button" class="btn btn-secondary" data-period="30">Maand</button>
+                    <button type="button" class="btn btn-secondary" data-period="365">Jaar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card slide-in-left border border-success">
+                <div class="card-body">
+                    <h5 class="card-title">Dagelijkse Bestellingen</h5>
+                    <canvas id="ordersChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card slide-in-right border border-success">
+                <div class="card-body">
+                    <h5 class="card-title">Dagelijkse Omzet</h5>
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let ordersChart;
+        let revenueChart;
+
+        // Parse the model data for charts
+        const orderData = @Html.Raw(Json.Serialize(Model.DailyOrderCounts.Select(x => new { date = x.Date.ToString("yyyy-MM-dd"), count = x.Count })));
+        const revenueData = @Html.Raw(Json.Serialize(Model.DailyRevenue.Select(x => new { date = x.Date.ToString("yyyy-MM-dd"), revenue = x.Revenue })));
+
+        function initializeCharts() {
+            const orderCtx = document.getElementById('ordersChart').getContext('2d');
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+
+            ordersChart = new Chart(orderCtx, {
+                type: 'line',
+                data: {
+                    labels: orderData.map(d => d.date),
+                    datasets: [{
+                        label: 'Bestellingen',
+                        data: orderData.map(d => d.count),
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            revenueChart = new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: revenueData.map(d => d.date),
+                    datasets: [{
+                        label: 'Omzet (€)',
+                        data: revenueData.map(d => d.revenue),
+                        borderColor: 'rgb(153, 102, 255)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCharts(orderData, revenueData) {
+            ordersChart.data.labels = orderData.map(d => d.date);
+            ordersChart.data.datasets[0].data = orderData.map(d => d.count);
+            ordersChart.update();
+
+            revenueChart.data.labels = revenueData.map(d => d.date);
+            revenueChart.data.datasets[0].data = revenueData.map(d => d.revenue);
+            revenueChart.update();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+
+            // Voeg event listeners toe voor datum validatie
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            const updateButton = document.getElementById('updateStats');
+
+            // Stel maximum datum in op vandaag
+            const today = new Date().toISOString().split('T')[0];
+            startDateInput.max = today;
+            endDateInput.max = today;
+
+            function validateDates() {
+                const startDate = new Date(startDateInput.value);
+                const endDate = new Date(endDateInput.value);
+                const isValid = startDate <= endDate;
+
+                updateButton.disabled = !isValid;
+                
+                if (!isValid) {
+                    alert('De startdatum moet voor of gelijk zijn aan de einddatum');
+                    return false;
+                }
+                return true;
+            }
+
+            // Valideer bij elke datum verandering
+            startDateInput.addEventListener('change', validateDates);
+            endDateInput.addEventListener('change', validateDates);
+
+            // Update de updateStatistics functie om eerst te valideren
+            const originalUpdateStats = updateStatistics;
+            updateStatistics = function() {
+                if (validateDates()) {
+                    originalUpdateStats();
+                }
+            };
+
+            // Handle date filter updates
+            updateButton.addEventListener('click', updateStatistics);
+
+            // Handle period buttons
+            document.querySelectorAll('[data-period]').forEach(button => {
+                button.addEventListener('click', function() {
+                    const days = parseInt(this.dataset.period);
+                    const endDate = new Date();
+                    const startDate = new Date();
+                    startDate.setDate(endDate.getDate() - days);
+
+                    document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+                    document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+                    updateStatistics();
+                });
+            });
+        });
+
+        function updateStatistics() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            document.getElementById('updateStats').disabled = true;
+
+            fetch('/Home/UpdateStatistics', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ startDate, endDate })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data) {
+                    // Update statistics
+                    document.getElementById('totalOrders').textContent = data.totalOrders;
+                    document.getElementById('totalRevenue').textContent = `€${parseFloat(data.totalRevenue).toFixed(2)}`;
+                    document.getElementById('totalCustomers').textContent = data.totalCustomers; // Gewijzigd van newCustomers naar totalCustomers
+
+                    // Update charts only if we have valid data
+                    if (Array.isArray(data.dailyOrderCounts) && Array.isArray(data.dailyRevenue)) {
+                        const orderData = data.dailyOrderCounts
+                            .filter(x => x && Object.keys(x).length > 0)  // Filter lege objecten
+                            .map(x => {
+                                console.log('Processing order item:', x);
+                                return {
+                                    date: x.Date ? x.Date.split('T')[0] : x.date ? x.date.split('T')[0] : '',
+                                    count: x.Count || x.count || 0
+                                };
+                            })
+                            .filter(x => x.date);
+
+                        const revenueData = data.dailyRevenue
+                            .filter(x => x && Object.keys(x).length > 0)  // Filter lege objecten
+                            .map(x => {
+                                console.log('Processing revenue item:', x);
+                                return {
+                                    date: x.Date ? x.Date.split('T')[0] : x.date ? x.date.split('T')[0] : '',
+                                    revenue: x.Revenue || x.revenue || 0
+                                };
+                            })
+                            .filter(x => x.date);
+
+                        console.log('Final processed order data:', orderData);
+                        console.log('Final processed revenue data:', revenueData);
+
+                        if (orderData.length > 0 && revenueData.length > 0) {
+                            updateCharts(orderData, revenueData);
+                        } else {
+                            console.warn('No valid data to update charts');
+                        }
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error updating statistics:', error);
+                alert('Er is een fout opgetreden bij het ophalen van de statistieken.');
+            })
+            .finally(() => {
+                document.getElementById('updateStats').disabled = false;
+            });
+        }
+    </script>
+}
