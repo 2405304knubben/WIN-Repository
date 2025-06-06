@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Bestelling bevestigen";
-    var orderType = ViewBag.OrderType;
+    var orderType = TempData["OrderType"] as string ?? "normaal";
     var isNormaal = orderType == "normaal";
 }
 
