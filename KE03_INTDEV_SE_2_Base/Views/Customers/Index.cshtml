@@ -4,46 +4,56 @@
     ViewData["Title"] = "Klantenoverzicht";
 }
 
-<h1>Klanten overzicht</h1>
+<h1 class="text-white">Klanten overzicht</h1>
 
-<p>
-    <a asp-action="Create">Nieuwe klant aanmaken</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                <p>Naam</p>
-            </th>
-            <th>
-                <p>Adres</p>
-            </th>
-            <th>
-                <p>Actief</p>
-            </th>
-            <th>
-                <p>Opties</p>
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Address)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Active)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen"></i></a>
-                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info"><i class="fa-solid fa-info"></i></a>
-                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i></a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<video autoplay loop muted playsinline id="bg-video">
+    <source src="/Videos/matrix.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
+
+<div class="mb-3">
+    <a asp-action="Create" class="btn btn-success">
+        <i class="fa-solid fa-plus"></i> Nieuwe Klant
+    </a>
+</div>
+
+<div class="card matrix-card shadow mb-4">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    <p>Naam</p>
+                </th>
+                <th>
+                    <p>Adres</p>
+                </th>
+                <th>
+                    <p>Actief</p>
+                </th>
+                <th>
+                    <p>Opties</p>
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+    @foreach (var item in Model) {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Address)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Active)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen"></i></a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info"><i class="fa-solid fa-info"></i></a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i></a>
+                </td>
+            </tr>
+    }
+        </tbody>
+    </table>
+</div>

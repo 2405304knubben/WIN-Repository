@@ -5,6 +5,11 @@
 
 <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
 
+<video autoplay loop muted playsinline id="bg-video">
+    <source src="/Videos/matrix.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
+
 <div class="dashboard">
     <!-- Cards -->
     <div class="row">
@@ -46,7 +51,7 @@
                 <input type="date" id="endDate" class="form-control" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
             </div>
             <div>
-                <button id="updateStats" class="btn btn-primary">Update</button>
+                <button id="updateStats" class="btn btn-success">Update</button>
             </div>
             <div class="ms-auto">
                 <div class="btn-group" role="group">
@@ -59,9 +64,10 @@
     </div>
 
     <!-- Charts -->
+    
     <div class="row mt-4">
         <div class="col-md-6">
-            <div class="card slide-in-left">
+            <div class="card slide-in-left border border-success">
                 <div class="card-body">
                     <h5 class="card-title">Dagelijkse Bestellingen</h5>
                     <canvas id="ordersChart"></canvas>
@@ -69,7 +75,7 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card slide-in-right">
+            <div class="card slide-in-right border border-success">
                 <div class="card-body">
                     <h5 class="card-title">Dagelijkse Omzet</h5>
                     <canvas id="revenueChart"></canvas>

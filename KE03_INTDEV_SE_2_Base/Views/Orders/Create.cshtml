@@ -4,15 +4,20 @@
     ViewData["Title"] = "Nieuwe Bestelling";
 }
 
+<video autoplay loop muted playsinline id="bg-video">
+    <source src="/Videos/matrix.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
+
 <div class="container py-4">
-    <h2 class="text-center matrix-header mb-5">Nieuwe Bestelling</h2>
+    <h2 class="text-center text-white matrix-header mb-5">Nieuwe Bestelling</h2>
 
     <form asp-action="Create" method="post">
         <div class="card matrix-card shadow mb-4">
             <div class="card-header bg-dark text-light">
                 <h5 class="mb-0">Selecteer Klant</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 <select name="CustomerId" class="form-select" required>
                     <option value="">Selecteer een klant...</option>
                     @foreach (var customer in Model.Customers)
@@ -27,7 +32,7 @@
             <div class="card-header bg-dark text-light">
                 <h5 class="mb-0">Selecteer Producten</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-dark table-striped mb-0">
                         <thead>

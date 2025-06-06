@@ -6,6 +6,11 @@
         var minItems = isNormaal ? 1 : 6;
     }
 
+<video autoplay loop muted playsinline id="bg-video">
+    <source src="/Videos/matrix.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
+
     <div class="order-container">
         <h2 class="order-title">@(isNormaal ? "Normale Bestelling" : "Bulk Bestelling") @(isNormaal ? "" : $"(Minimaal {minItems} producten)")</h2>
 

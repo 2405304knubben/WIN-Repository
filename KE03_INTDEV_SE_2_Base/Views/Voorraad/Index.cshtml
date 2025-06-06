@@ -3,6 +3,11 @@
     ViewData["Title"] = "Productoverzicht";
 }
 
+<video autoplay loop muted playsinline id="bg-video">
+    <source src="/Videos/matrix.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
+
 <div class="product-overview">
     <div class="header-section mb-4">
         <h1 class="mb-3">Voorraad Producten en Onderdelen</h1>        
@@ -22,7 +27,7 @@
                 </select>
             </div>
             <div class="actions">
-                <a asp-controller="Product" asp-action="Create" class="btn btn-primary">Nieuw Product</a>
+                <a asp-controller="Product" asp-action="Create" class="btn btn-success">Nieuw Product</a>
             </div>
         </div>
     </div>
@@ -91,24 +96,19 @@
                 <div class="product-content">
                     <div class="product-description">@item.Description</div>
                     <div class="product-details">
+                        <div class="usage-info">
+                            <span class="label">Prijs:</span>
+                            <div class="parts-list">
+                                <span class="value">€@item.Price.ToString("N2")</span>
+                            </div>
+                        </div>
                         <div class="stock-info">
                             <span class="label">Voorraad</span>
                             <span class="value">@item.Stock stuks</span>
                         </div>
-                        <div class="usage-info">
-                            <span class="label">Gebruikt in producten:</span>
-                            <div class="parts-list">
-                                @foreach (var product in item.Products)
-                                {
-                                    <div class="part-item">
-                                        <span class="part-name">@product.Name</span>
-                                    </div>
-                                }
-                            </div>
-                        </div>
                     </div>
                 </div>
-                <div class="Part-actions">
+                <div class="product-actions">
                     <a asp-controller="Part" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning"><i
                             class="fa-solid fa-pen"></i></a>
                     <a asp-controller="Part" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info"><i
@@ -116,8 +116,7 @@
                     <a asp-controller="Part" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger"><i
                             class="fa-solid fa-trash"></i></a>
                     <a asp-controller="Voorraad" asp-action="Create" asp-route-id="@item.Id" asp-route-type="part" class="btn btn-sm btn-success">
-                        <i class="fa-solid fa-truck"></i>
-                    </a>
+                        <i class="fa-solid fa-truck"></i></a>
                 </div>
             </div>
         }

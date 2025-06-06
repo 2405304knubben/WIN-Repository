@@ -1,3 +1,25 @@
+#bg-video {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    min-width: 100%;
+    min-height: 100%;
+    z-index: -1;
+    object-fit: cover;
+}
+
+.dashboard {
+    position: relative;
+    z-index: 1;
+    color: #fff; /* Optioneel: witte tekst voor leesbaarheid */
+}
+
+.card {
+    background-color: white; /* Donkere transparante achtergrond */
+    color: #fff; /* Witte tekst in kaarten */
+    border-radius: 10px;
+}
+
 /* Animations */
 .fade-in {
     opacity: 0;
@@ -65,13 +87,13 @@
 }
 
 /* Card styles */
-.card {
-    margin-bottom: 20px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: pointer;
-    transform-origin: center;
-    background-color: white;
+.card {  
+   margin-bottom: 20px;  
+   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  
+   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);  
+   cursor: pointer;  
+   transform-origin: center;  
+   background-color: white;  
 }
 
 .card:hover:not(.expanded) {

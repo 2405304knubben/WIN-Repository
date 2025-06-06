@@ -10,54 +10,58 @@
     <script src="https://kit.fontawesome.com/338a725bc5.js" crossorigin="anonymous"></script>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Matrix Inc.</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Product" asp-action="Index">Voorraad</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Customers" asp-action="Index">Klanten</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Orders" asp-action="Index">Bestellingen</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Voorraad" asp-action="Order">Bijbestellen</a>
-                        </li>
-                    </ul>
-                    <form class="d-flex" asp-controller="Home" asp-action="Search" method="post">
-                        <input class="form-control me-2" type="search" name="search" placeholder="Zoeken" aria-label="Search">
-                        <button class="btn btn-outline-success" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
-                    </form>
-                    <ul class="navbar-nav flex-grow-1 justify-content-end">
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fa-solid fa-user"></i> @User.Identity.Name
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                <li>
-                                    <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
-                                        @Html.AntiForgeryToken()
-                                        <a href="javascript:document.getElementById('logoutForm').submit()" class="dropdown-item">Uitloggen</a>
-                                    </form>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+    <header>  
+      <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-black border-bottom box-shadow mb-3">  
+          <div class="container-fluid">  
+              <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">  
+                  <img src="~/Images/MatrixLOGO.png" alt="Matrix Inc. Logo" style="height: 50px; margin-right: 60px;" />  
+              </a>  
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"  
+                      aria-expanded="false" aria-label="Toggle navigation">  
+                  <span class="navbar-toggler-icon"></span>  
+              </button>  
+              <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">  
+                  <ul class="navbar-nav flex-grow-1">  
+                      <li class="nav-item">  
+                          <a class="nav-link btn btn-black text-success" asp-area="" asp-controller="Home" asp-action="Index">Home</a>  
+                      </li>  
+                      <li class="nav-item">  
+                          <a class="nav-link btn btn-black text-success" asp-area="" asp-controller="Product" asp-action="Index">Voorraad</a>  
+                      </li>  
+                      <li class="nav-item">  
+                          <a class="nav-link btn btn-black text-success" asp-area="" asp-controller="Customers" asp-action="Index">Klanten</a>  
+                      </li>  
+                      <li class="nav-item">  
+                          <a class="nav-link btn btn-black text-success" asp-area="" asp-controller="Orders" asp-action="Index">Bestellingen</a>  
+                      </li>  
+                      <li class="nav-item">  
+                          <a class="nav-link btn btn-black text-success" asp-area="" asp-controller="Voorraad" asp-action="Order">Bijbestellen</a>  
+                      </li>  
+                  </ul>  
+                  <form class="d-flex" asp-controller="Home" asp-action="Search" method="post">  
+                      <input class="form-control me-2" type="search" name="search" placeholder="Zoeken" aria-label="Search">  
+                      <button class="btn btn-outline-success" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>  
+                  </form>  
+                  <ul class="navbar-nav flex-grow-1 justify-content-end">  
+                      <li class="nav-item dropdown">  
+                          <a class="nav-link dropdown-toggle btn btn-black text-success" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">  
+                              <i class="fa-solid fa-user"></i> @User.Identity.Name  
+                          </a>  
+                          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">  
+                              <li>  
+                                  <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">  
+                                        @Html.AntiForgeryToken()  
+                                        <a href="javascript:document.getElementById('logoutForm').submit()" class="dropdown-item text-danger d-flex align-items-center">  
+                                            <i class="fa-solid fa-right-from-bracket me-2"></i> Uitloggen  
+                                        </a>  
+                                  </form>
+                              </li>  
+                          </ul>  
+                      </li>  
+                  </ul>  
+              </div>  
+          </div>  
+      </nav>  
     </header>
     <div class="container">
         <main role="main" class="pb-3">
@@ -65,9 +69,10 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - Matrix Inc. Admin Paneel - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="border-top footer text-success bg-black box-shadow">
+        <div class="container py-3 d-flex justify-content-between align-items-center">
+            <span>&copy; 2025 - Matrix Inc. Admin Paneel</span>
+            <a class="text-success" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

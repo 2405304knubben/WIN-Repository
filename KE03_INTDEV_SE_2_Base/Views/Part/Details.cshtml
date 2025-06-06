@@ -4,9 +4,14 @@
     ViewData["Title"] = "Part Informatie";
 }
 
-<h1>Informatie</h1>
+<video autoplay loop muted playsinline id="bg-video">
+    <source src="/Videos/matrix.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
 
-<div>
+<h1 class="text-white">Informatie</h1>
+
+<div class="card matrix-card shadow mb-4">
     <h4>Onderdeel</h4>
     <hr />
     <dl class="row">
@@ -36,7 +41,8 @@
         </dd>
     </dl>
 </div>
+
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Aanpassen</a> |
-    <a asp-action="Index">Terug naar voorraad</a>
+    <a class="btn btn-success" asp-action="Edit" asp-route-id="@Model?.Id">Aanpassen</a> |
+    <a class="btn btn-secondary" asp-action="Index">Terug naar productenoverzicht</a>
 </div>
