@@ -8,7 +8,9 @@
 
     <div class="order-container">
         <h2 class="order-title">@(isNormaal ? "Normale Bestelling" : "Bulk Bestelling") @(isNormaal ? "" : $"(Minimaal {minItems} producten)")</h2>
-
+        @{
+            TempData["OrderType"] = orderType;
+        }
         <div class="add-product-section">
             <div class="add-product-controls">
                 <select id="productSelect" class="form-select">
