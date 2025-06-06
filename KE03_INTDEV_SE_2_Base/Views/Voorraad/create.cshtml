@@ -7,48 +7,79 @@
             <h5 class="mb-0">Voorraad Aanvullen</h5>
         </div>
         <div class="card-body">
-            <form asp-action="SubmitOrder" method="post">
-                @if (Model.Any())
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+            }
+
+            <form asp-action="SubmitOrder" method="post" id="voorraadForm">
+                @if (Model != null && Model.Any())
                 {
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>Product</th>
+                                <th>Type</th>
+                                <th>Naam</th>
                                 <th>Huidige Voorraad</th>
+                                <th>Prijs p/s</th>
                                 <th>Aantal Bijbestellen</th>
+                                <th>Subtotaal</th>
+                                <th>Actie</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var item in Model)
                             {
-                                <tr>
+                                <tr data-item-id="@item.Id" data-item-type="@item.Type">
+                                    <td>@item.Type</td>
                                     <td>@item.Name</td>
                                     <td>@item.CurrentStock</td>
+                                    <td>€@item.Price.ToString("N2")</td>
                                     <td>
-                                        <input type="number" name="quantities[@item.Id]" 
-                                               class="form-control" style="width: 120px"
-                                               value="@item.OrderAmount" min="1" required />
+                                        <input type="number" name="quantities[@item.Id]"
+                                               class="form-control quantity-input" style="width: 100px;"
+                                               value="@item.OrderAmount" min="1" required
+                                               data-price="@item.Price.ToString("F2").Replace(",", ".")" data-id="@item.Id" />
+                                    </td>
+                                    <td class="subtotal" data-id="@item.Id">
+                                        €@((item.Price * item.OrderAmount).ToString("N2"))
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(@item.Id)">
+                                            <i class="fa-solid fa-times"></i>
+                                        </button>
                                     </td>
                                 </tr>
                             }
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5" class="text-end"><strong>Totaal:</strong></td>
+                                <td id="grandTotal">€0.00</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
                     </table>
 
                     <div class="d-flex justify-content-between mt-4">
-                        <a asp-action="Index" class="btn btn-secondary">
-                            <i class="fa-solid fa-plus"></i> Meer producten toevoegen
+                        <a asp-controller="Voorraad" asp-action="Index" class="btn btn-secondary">
+                            <i class="fa-solid fa-plus"></i> Meer producten/onderdelen toevoegen
                         </a>
-                        <button type="submit" class="btn btn-success">
-                            <i class="fa-solid fa-check"></i> Voorraad Bijwerken
+                        <button type="button" class="btn btn-success" onclick="showConfirmModal()">
+                            <i class="fa-solid fa-check"></i> Voorraad Bijbestellen
                         </button>
                     </div>
                 }
                 else
                 {
                     <div class="text-center py-4">
-                        <p>Geen producten geselecteerd.</p>
-                        <a asp-action="Index" class="btn btn-primary">
-                            <i class="fa-solid fa-plus"></i> Producten Selecteren
+                        <p>Geen producten of onderdelen geselecteerd om bij te bestellen.</p>
+                        <a asp-controller="Voorraad" asp-action="Index" class="btn btn-primary">
+                            <i class="fa-solid fa-plus"></i> Producten/Onderdelen Selecteren
                         </a>
                     </div>
                 }
@@ -56,3 +87,118 @@
         </div>
     </div>
 </div>
+
+<!-- Bevestigingsmodal -->
+<div class="modal fade" id="confirmOrderModal" tabindex="-1" aria-labelledby="confirmOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmOrderModalLabel">Bestelling Bevestigen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="company-details mb-3">
+                    <h6>Bestelling voor:</h6>
+                    <p class="mb-1"><strong>Matrix.Inc</strong></p>
+                    <p class="mb-1">Telefoon: 123-456-789</p>
+                </div>
+                <hr/>
+                <h6>Order Overzicht:</h6>
+                <div id="modalOrderSummary">
+                    <!-- Items worden hier dynamisch ingevoegd -->
+                </div>
+                <hr/>
+                <p class="text-end"><strong>Totaal Te Bestellen: <span id="modalGrandTotal">€0.00</span></strong></p>
+                <p>Weet u zeker dat u deze bestelling wilt plaatsen?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuleren</button>
+                <button type="button" class="btn btn-primary" onclick="document.getElementById('voorraadForm').submit();">Bevestig Bestelling</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function calculateRowSubtotal(inputElement) {
+            const quantity = parseInt(inputElement.value) || 0;
+            // Zorg ervoor dat data-price een punt als decimaalteken gebruikt voor parseFloat
+            const priceText = inputElement.dataset.price; 
+            const price = parseFloat(priceText) || 0;
+            const subtotal = quantity * price;
+            const subtotalCell = inputElement.closest('tr').querySelector('.subtotal');
+            // Gebruik toLocaleString voor correcte weergave met komma voor decimalen
+            subtotalCell.textContent = `€${subtotal.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            calculateGrandTotal();
+        }
+
+        function calculateGrandTotal() {
+            let grandTotal = 0;
+            document.querySelectorAll('.subtotal').forEach(cell => {
+                // Converteer de tekst (bijv. €123,45) naar een getal voor de berekening
+                const subtotalText = cell.textContent.replace('€', '').replace(/\./g, '').replace(',', '.');
+                grandTotal += parseFloat(subtotalText) || 0;
+            });
+            document.getElementById('grandTotal').textContent = `€${grandTotal.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        function removeItem(itemId) {
+            fetch('/Voorraad/RemoveItem', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Voeg AntiForgeryToken header toe als ValidateAntiForgeryToken op de POST action staat
+                    // 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value 
+                },
+                body: JSON.stringify({ id: itemId }) 
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload(); // Herlaad de pagina om de lijst bij te werken.
+                } else {
+                    alert('Fout bij verwijderen item.');
+                }
+            })
+            .catch(error => {
+                console.error('Error removing item:', error);
+                alert('Netwerkfout bij verwijderen item.');
+            });
+        }
+
+        function showConfirmModal() {
+            let modalSummaryHtml = '<ul class="list-unstyled">';
+            let grandTotalModal = 0;
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const type = row.cells[0].textContent;
+                const name = row.cells[1].textContent;
+                const quantityInput = row.querySelector('.quantity-input');
+                const quantity = parseInt(quantityInput.value);
+                const priceText = quantityInput.dataset.price;
+                const price = parseFloat(priceText);
+                const subtotal = quantity * price;
+                grandTotalModal += subtotal;
+                modalSummaryHtml += `<li>${type} - ${name}: ${quantity} x €${price.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} = €${subtotal.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</li>`;
+            });
+            modalSummaryHtml += '</ul>';
+            
+            document.getElementById('modalOrderSummary').innerHTML = modalSummaryHtml;
+            document.getElementById('modalGrandTotal').textContent = `€${grandTotalModal.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+            var confirmModal = new bootstrap.Modal(document.getElementById('confirmOrderModal'));
+            confirmModal.show();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.quantity-input').forEach(input => {
+                input.addEventListener('input', function () {
+                    calculateRowSubtotal(this);
+                });
+                // Bereken subtotal voor elk item direct bij het laden van de pagina
+                calculateRowSubtotal(input);
+            });
+            // Bereken het eindtotaal na het initialiseren van alle subtotals
+            // calculateGrandTotal(); // Wordt al aangeroepen vanuit calculateRowSubtotal
+        });
+    </script>
+}

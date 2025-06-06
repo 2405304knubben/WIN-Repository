@@ -38,13 +38,14 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
             return View(orderItems);
         }
 
-        public IActionResult Create(int id, string type = "product") // Add type parameter
+        public IActionResult Create(int id, string type = "product")
         {
             var orderItems = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems") 
                 ?? new List<VoorraadItemViewModel>();
             
-            // Voeg het geselecteerde product toe als het nog niet in de lijst staat
-            if (!orderItems.Any(x => x.Id == id))
+            // Controleer of het item (op basis van Id én Type) nog niet in de lijst staat
+            // Alleen toevoegen als id niet 0 is (0 wordt gebruikt om de pagina te tonen zonder nieuw item toe te voegen)
+            if (id != 0 && !orderItems.Any(x => x.Id == id && x.Type.Equals(type, StringComparison.OrdinalIgnoreCase)))
             {
                 if (type.ToLower() == "product")
                 {
@@ -57,7 +58,8 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             Name = product.Name,
                             Type = "Product",
                             CurrentStock = product.Stock,
-                            OrderAmount = 1
+                            OrderAmount = 1,
+                            Price = product.Price // Prijs meegeven
                         });
                     }
                 }
@@ -72,14 +74,14 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             Name = part.Name,
                             Type = "Part",
                             CurrentStock = part.Stock,
-                            OrderAmount = 1
+                            OrderAmount = 1,
+                            Price = part.Price // Prijs meegeven
                         });
                     }
                 }
-                
                 HttpContext.Session.SetObjectAsJson("VoorraadItems", orderItems);
             }
-
+            // De view 'Create.cshtml' wordt gebruikt om de lijst te tonen.
             return View(orderItems);
         }
 
@@ -157,10 +159,10 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
             var orderItems = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems") 
                 ?? new List<VoorraadItemViewModel>();
             
-            // Check of item al in lijst zit
-            if (!orderItems.Any(x => x.Id == id && x.Type == type))
+            // Check of item al in lijst zit op basis van Id en Type
+            if (!orderItems.Any(x => x.Id == id && x.Type.Equals(type, StringComparison.OrdinalIgnoreCase)))
             {
-                if (type == "product")
+                if (type.ToLower() == "product")
                 {
                     var product = _context.Products.Find(id);
                     if (product != null)
@@ -171,15 +173,33 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             Name = product.Name,
                             Type = "Product",
                             CurrentStock = product.Stock,
-                            OrderAmount = 1
+                            OrderAmount = 1,
+                            Price = product.Price // Prijs meegeven
                         });
                     }
                 }
-                // Voeg hier later part logica toe als nodig
+                else if (type.ToLower() == "part")
+                {
+                    var part = _context.Parts.Find(id);
+                    if (part != null)
+                    {
+                        orderItems.Add(new VoorraadItemViewModel
+                        {
+                            Id = part.Id,
+                            Name = part.Name,
+                            Type = "Part",
+                            CurrentStock = part.Stock,
+                            OrderAmount = 1,
+                            Price = part.Price // Prijs meegeven
+                        });
+                    }
+                }
             }
 
             HttpContext.Session.SetObjectAsJson("VoorraadItems", orderItems);
-            return RedirectToAction(nameof(Create));
+            // Redirect naar de Create view om de bijgewerkte lijst te tonen.
+            // id=0 en een leeg type zorgen ervoor dat er niet opnieuw een item wordt toegevoegd door de Create action.
+            return RedirectToAction(nameof(Create), new { id = 0, type = "" });
         }
 
         [HttpPost]
@@ -199,29 +219,78 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         public IActionResult RemoveItem([FromBody] RemoveItemModel model)
         {
             var items = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems");
-            items?.RemoveAll(i => i.Id == model.Id);
-            HttpContext.Session.SetObjectAsJson("VoorraadItems", items);
+            if (items != null)
+            {
+                // Verwijder item op basis van Id. Als Id's niet uniek zijn over Producten/Parts,
+                // zou je hier ook op Type moeten filteren (model.Type meegeven vanuit JS).
+                items.RemoveAll(i => i.Id == model.Id); 
+                if (items.Any())
+                {
+                    HttpContext.Session.SetObjectAsJson("VoorraadItems", items);
+                }
+                else
+                {
+                    HttpContext.Session.Remove("VoorraadItems"); // Verwijder de sessie key als de lijst leeg is.
+                }
+            }
             return Ok();
         }
 
         [HttpPost]
         public async Task<IActionResult> SubmitOrder(Dictionary<int, int> quantities)
         {
-            var orderItems = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems");
-            if (orderItems != null)
+            // Haal de actuele lijst van items uit de sessie om te verwerken.
+            var itemsToProcess = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems") 
+                                      ?? new List<VoorraadItemViewModel>();
+            try
             {
-                foreach (var item in orderItems)
+                if (itemsToProcess.Any())
                 {
-                    var product = await _context.Products.FindAsync(item.Id);
-                    if (product != null && quantities.ContainsKey(item.Id))
+                    foreach (var item in itemsToProcess)
                     {
-                        product.Stock += quantities[item.Id];
+                        // Zoek de bestelde hoeveelheid voor dit item.
+                        // De 'quantities' dictionary komt van de name="quantities[@item.Id]" in de view.
+                        if (quantities.TryGetValue(item.Id, out int quantityToOrder) && quantityToOrder > 0)
+                        {
+                            if (item.Type.Equals("Product", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var product = await _context.Products.FindAsync(item.Id);
+                                if (product != null)
+                                {
+                                    product.Stock += quantityToOrder; // Voorraad verhogen
+                                    _logger.LogInformation($"Product {product.Name} (ID: {product.Id}) voorraad bijgewerkt met {quantityToOrder}. Nieuwe voorraad: {product.Stock}");
+                                }
+                            }
+                            else if (item.Type.Equals("Part", StringComparison.OrdinalIgnoreCase))
+                            {
+                                var part = await _context.Parts.FindAsync(item.Id);
+                                if (part != null)
+                                {
+                                    part.Stock += quantityToOrder; // Voorraad verhogen
+                                    _logger.LogInformation($"Onderdeel {part.Name} (ID: {part.Id}) voorraad bijgewerkt met {quantityToOrder}. Nieuwe voorraad: {part.Stock}");
+                                }
+                            }
+                        }
                     }
+                    await _context.SaveChangesAsync();
+                    HttpContext.Session.Remove("VoorraadItems"); // Leeg de "winkelwagen" na succesvolle bestelling.
+                    TempData["SuccessMessage"] = "Voorraad succesvol bijgewerkt!";
+                    return RedirectToAction(nameof(Index)); // Na succes, terug naar het overzicht van producten/onderdelen.
                 }
-                await _context.SaveChangesAsync();
-                HttpContext.Session.Remove("VoorraadItems");
+                else
+                {
+                    TempData["ErrorMessage"] = "Geen items in de lijst om te bestellen.";
+                    // Stuur terug naar de (lege) Create pagina. id=0 voorkomt dat de Create action een item probeert toe te voegen.
+                    return RedirectToAction(nameof(Create), new { id = 0 }); 
+                }
             }
-            return RedirectToAction(nameof(Index));
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Fout tijdens het verwerken van de voorraadbestelling.");
+                TempData["ErrorMessage"] = "Er is een fout opgetreden bij het verwerken van de bestelling.";
+                // Stuur de gebruiker terug naar de create pagina met de items die ze probeerden te bestellen, zodat ze het opnieuw kunnen proberen.
+                return View("Create", itemsToProcess);
+            }
         }
 
         public class UpdateAmountModel
