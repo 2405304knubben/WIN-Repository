@@ -8,5 +8,6 @@ namespace KE03_INTDEV_SE_2_Base.ViewModels
         public int OrderAmount { get; set; } = 1;
         public string Type { get; set; }  // Add this property to distinguish between Product/Part
         public decimal Price { get; set; } // Add this property to support price
+        public decimal Price { get; set; } // Toevoegen van Price property
     }
 }
