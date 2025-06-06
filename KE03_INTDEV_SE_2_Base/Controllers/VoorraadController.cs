@@ -60,7 +60,6 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             CurrentStock = product.Stock,
                             OrderAmount = 1,
                             Price = product.Price // Prijs meegeven,
-                            Price = product.Price  // Add this line
                         });
                     }
                 }
