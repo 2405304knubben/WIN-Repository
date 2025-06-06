@@ -76,7 +76,6 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             CurrentStock = part.Stock,
                             OrderAmount = 1,
                             Price = part.Price // Prijs meegeven,
-                            Price = part.Price
                         });
                     }
                 }
