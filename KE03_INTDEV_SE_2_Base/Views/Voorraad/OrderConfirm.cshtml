@@ -26,13 +26,26 @@
                             <th>Prijs per stuk</th>
                             <th>Totaal</th>
                         </tr>
-                    </thead>
-                    <tbody id="orderItemsList">
+                    </thead>                    <tbody>
+                        @{
+                            decimal totalPrice = 0;
+                        }
+                        @foreach (var item in Model.AvailableItems)
+                        {
+                            var itemTotal = item.Price * item.Quantity;
+                            totalPrice += itemTotal;
+                            <tr>
+                                <td>@item.Name</td>
+                                <td>@item.Quantity</td>
+                                <td>€@item.Price.ToString("F2")</td>
+                                <td>€@itemTotal.ToString("F2")</td>
+                            </tr>
+                        }
                     </tbody>
                     <tfoot>
                         <tr>
                             <td colspan="3" class="text-end"><strong>Totaal:</strong></td>
-                            <td id="totalPrice">€0.00</td>
+                            <td>€@totalPrice.ToString("F2")</td>
                         </tr>
                     </tfoot>
                 </table>
@@ -69,31 +82,6 @@
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const orderItems = JSON.parse('@Html.Raw(ViewBag.OrderItems)');
-            displayOrderItems(orderItems);
-        });
-
-        function displayOrderItems(items) {
-            const tbody = document.getElementById('orderItemsList');
-            let total = 0;
-
-            items.forEach(item => {
-                const tr = document.createElement('tr');
-                const subtotal = item.quantity * item.price;
-                total += subtotal;
-
-                tr.innerHTML = `
-                    <td>${item.name}</td>
-                    <td>${item.quantity}</td>
-                    <td>€${item.price.toFixed(2)}</td>
-                    <td>€${subtotal.toFixed(2)}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            document.getElementById('totalPrice').textContent = `€${total.toFixed(2)}`;
-        }
 
         function confirmOrder() {
             const orderItems = JSON.parse('@Html.Raw(ViewBag.OrderItems)');

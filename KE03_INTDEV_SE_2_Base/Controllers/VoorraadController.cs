@@ -382,6 +382,23 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                 return RedirectToAction(nameof(Ordercreate));
             }
             return View(viewModel);
+        }        [HttpPost]
+        public IActionResult OrderConfirm(string orderType, List<OrderItemViewModel> Items)
+        {
+            if (Items == null || !Items.Any())
+            {
+                TempData["ErrorMessage"] = "Geen items geselecteerd voor bestelling.";
+                return RedirectToAction(nameof(Ordercreate));
+            }
+
+            var viewModel = new OrderEditViewModel
+            {
+                OrderDate = DateTime.Now,
+                AvailableItems = Items // Store the items in the model
+            };
+
+            TempData["OrderType"] = orderType;
+            return View(viewModel);
         }
     }
 }

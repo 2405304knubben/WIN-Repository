@@ -30,38 +30,43 @@
                         </option>
                     }
                 </select>
-                <button class="btn btn-success" id="addProduct">Toevoegen</button>
+                <button type="button" class="btn btn-success" id="addProduct">Toevoegen</button>
             </div>
             <div class="warning-message" id="selectWarning">Selecteer eerst een @(isNormaal ? "product" : "onderdeel")</div>
         </div>
         <div class="warning-message" id="warningMessage">Minimaal @minItems stuks vereist voor bestelling.</div>
 
-        <div class="table-responsive">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>@(isNormaal ? "Product" : "Onderdeel")</th>
-                        <th>Voorraad</th>
-                        <th>Prijs per stuk</th>
-                        <th>Aantal</th>
-                        <th>Verwijderen</th>
-                    </tr>
-                </thead>
-                <tbody id="orderItems">
-                </tbody>
-                <tfoot>
-                    <tr class="total-row">
-                        <td colspan="2"></td>
-                        <td><strong>Totaal:</strong></td>
-                        <td colspan="2" id="totalPrice">€0.00</td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
+        <form id="orderForm" asp-controller="Voorraad" asp-action="OrderConfirm" method="post">
+            <input type="hidden" name="orderType" value="@orderType" />
+            <div id="orderItemInputs"></div>
+            
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>@(isNormaal ? "Product" : "Onderdeel")</th>
+                            <th>Voorraad</th>
+                            <th>Prijs per stuk</th>
+                            <th>Aantal</th>
+                            <th>Verwijderen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderItems">
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td colspan="2"></td>
+                            <td><strong>Totaal:</strong></td>
+                            <td colspan="2" id="totalPrice">€0.00</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
 
-        <div class="order-actions">
-            <button class="btn btn-primary btn-lg" id="submitOrder" data-min-items="@minItems" disabled>Bestellen</button>
-        </div>
+            <div class="order-actions">
+                <button type="submit" class="btn btn-primary btn-lg" id="submitOrder" data-min-items="@minItems" disabled>Bestellen</button>
+            </div>
+        </form>
     </div>
 
     <style>
@@ -244,8 +249,10 @@
             const productSelect = document.getElementById('productSelect');
             const addButton = document.getElementById('addProduct');
             const orderItemsContainer = document.getElementById('orderItems');
+            const orderItemInputs = document.getElementById('orderItemInputs');
             const selectWarning = document.getElementById('selectWarning');
             const minItems = parseInt(document.getElementById('submitOrder').dataset.minItems);
+            const orderForm = document.getElementById('orderForm');
 
             addButton.addEventListener('click', function() {
                 const option = productSelect.selectedOptions[0];
@@ -271,6 +278,9 @@
                 row.innerHTML = `
                     <td class="product-info">
                         <span>${name}</span>
+                        <input type="hidden" name="Items[${orderItems.size}].Id" value="${id}">
+                        <input type="hidden" name="Items[${orderItems.size}].Name" value="${name}">
+                        <input type="hidden" name="Items[${orderItems.size}].Price" value="${price}">
                     </td>
                     <td class="stock-info ${stock > 0 ? 'in-stock' : 'out-of-stock'}">
                         ${stock > 0 ? 
@@ -282,13 +292,14 @@
                         <div class="quantity-control">
                             <input type="number" value="1" min="1" 
                                    class="form-control quantity-input" 
+                                   name="Items[${orderItems.size}].Quantity"
                                    data-id="${id}"
                                    data-price="${price}"
                                    title="${stock === 0 ? 'Dit item wordt bijbesteld' : ''}">
                         </div>
                     </td>
                     <td>
-                        <button class="btn btn-danger btn-sm delete-item" data-id="${id}">✕</button>
+                        <button type="button" class="btn btn-danger btn-sm delete-item" data-id="${id}">✕</button>
                     </td>
                 `;
 
@@ -303,11 +314,22 @@
                     orderItems.delete(id);
                     row.remove();
                     updateTotals();
+                    reorderFormIndices();
                 });
 
                 updateTotals();
                 productSelect.value = '';
             });
+
+            function reorderFormIndices() {
+                const rows = orderItemsContainer.getElementsByTagName('tr');
+                Array.from(rows).forEach((row, index) => {
+                    row.querySelectorAll('input[name*="Items["]').forEach(input => {
+                        const fieldName = input.name.match(/Items\[\d+\]\.(.+)/)[1];
+                        input.name = `Items[${index}].${fieldName}`;
+                    });
+                });
+            }
 
             function updateTotals() {
                 let total = 0;
@@ -332,39 +354,5 @@
                     warningMessage.style.display = 'none';
                 }
             }
-
-            document.getElementById('submitOrder').addEventListener('click', function() {
-                const orderItems = [];
-                document.querySelectorAll('.quantity-input').forEach(input => {
-                    const quantity = parseInt(input.value) || 0;
-                    if (quantity > 0) {
-                        const id = input.dataset.id;
-                        orderItems.push({ id, quantity });
-                    }
-                });
-
-                // Create a form element
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/Voorraad/OrderConfirm';
-
-                // Add order items as hidden input
-                const orderItemsInput = document.createElement('input');
-                orderItemsInput.type = 'hidden';
-                orderItemsInput.name = 'orderItems';
-                orderItemsInput.value = JSON.stringify(orderItems);
-                form.appendChild(orderItemsInput);
-
-                // Add order type as hidden input
-                const orderTypeInput = document.createElement('input');
-                orderTypeInput.type = 'hidden';
-                orderTypeInput.name = 'orderType';
-                orderTypeInput.value = '@orderType';
-                form.appendChild(orderTypeInput);
-
-                // Add the form to the document and submit it
-                document.body.appendChild(form);
-                form.submit();
-            });
         });
     </script>
