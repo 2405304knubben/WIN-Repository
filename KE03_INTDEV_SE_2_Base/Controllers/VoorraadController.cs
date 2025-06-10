@@ -293,6 +293,40 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> UploadImage(int id, string type, IFormFile image)
+        {
+            if (image == null || image.Length == 0)
+                return BadRequest("No image was uploaded.");
+
+            using (var memoryStream = new MemoryStream())
+            {
+                await image.CopyToAsync(memoryStream);
+                var imageData = memoryStream.ToArray();
+
+                if (type.ToLower() == "product")
+                {
+                    var product = await _context.Products.FindAsync(id);
+                    if (product != null)
+                    {
+                        product.Image = imageData;
+                        await _context.SaveChangesAsync();
+                    }
+                }
+                else if (type.ToLower() == "part")
+                {
+                    var part = await _context.Parts.FindAsync(id);
+                    if (part != null)
+                    {
+                        part.Image = imageData;
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
         public class UpdateAmountModel
         {
             public int Id { get; set; }

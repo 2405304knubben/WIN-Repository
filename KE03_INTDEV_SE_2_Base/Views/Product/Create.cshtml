@@ -13,15 +13,18 @@
 
 <div class="card matrix-card shadow mb-4">
     <h4>Product</h4>
-    <hr />
-    <div class="row">
-        <div class="col-md-4">
-            <form asp-action="Create" id="Submit">
+    <hr />    <div class="row">
+        <div class="col-md-8">
+            <form asp-action="Create" id="Submit" enctype="multipart/form-data">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label asp-for="Name" class="control-label">Naam</label>
                     <input asp-for="Name" class="form-control" />
                     <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="imageFile" class="control-label">Afbeelding</label>
+                    <input type="file" id="imageFile" name="imageFile" class="form-control" accept="image/*" onchange="previewImage(event)" />
                 </div>
                 <div class="form-group">
                     <label asp-for="Description" class="control-label">Beschrijving</label>
@@ -32,27 +35,83 @@
                     <label asp-for="Price" class="control-label">Prijs</label>
                     <input asp-for="Price" class="form-control" />
                     <span asp-validation-for="Price" class="text-danger"></span>
-                </div>
-                <div class="form-group">
+                </div>                <div class="form-group">
                     <label asp-for="Stock" class="control-label">Voorraad</label>
                     <input asp-for="Stock" class="form-control" />
                     <span asp-validation-for="Stock" class="text-danger"></span>
                 </div>
             </form>
         </div>
+        <div class="col-md-4">
+            <div id="imagePreview" class="image-preview-container" style="display: none;">
+                <h5 class="mb-3">Afbeelding Voorbeeld</h5>
+                <img src="" alt="Preview" class="img-preview" />
+            </div>
+        </div>
     </div>
 </div>
 
 <div>
     <input type="button" onclick="myFunction()" value="Aanmaken" class="btn btn-primary" /> |
-    <a class="btn btn-secondary" asp-action="Index">Terug naar klantenoverzicht</a>
+    <a class="btn btn-secondary" asp-action="Index">Terug naar Product overzicht</a>
 </div>
 
 @section Scripts {
     <script>
         function myFunction() {
-          document.getElementById("Submit").submit();
+            document.getElementById("Submit").submit();
+        }
+
+        function previewImage(event) {
+            const preview = document.getElementById('imagePreview');
+            const previewImg = preview.querySelector('img');
+            const file = event.target.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+            }
         }
     </script>
 }
-}
+
+<style>
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .matrix-card {
+        padding: 20px;
+        background-color: white;
+        border-radius: 12px;
+    }
+
+    .image-preview-container {
+        background-color: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        height: 100%;
+        min-height: 300px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        border: 2px dashed #dee2e6;
+    }
+
+    .img-preview {
+        max-width: 100%;
+        max-height: 300px;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        background-color: white;
+        padding: 10px;
+    }
+</style>

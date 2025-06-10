@@ -8,10 +8,10 @@
 
 <div class="container py-4">
     <div class="card matrix-card shadow mb-4">
-        <div class="card-header bg-dark text-light">
+        <div class="card-header bg-dark text-light p-3">
             <h5 class="mb-0">Voorraad Aanvullen</h5>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
             @if (TempData["SuccessMessage"] != null)
             {
                 <div class="alert alert-success">@TempData["SuccessMessage"]</div>
@@ -123,6 +123,27 @@
         </div>
     </div>
 </div>
+
+<style>
+    .table {
+        margin-bottom: 1.5rem;
+    }
+
+    .table th,
+    .table td {
+        padding: 1rem;
+        vertical-align: middle;
+    }
+
+    .quantity-input {
+        min-width: 100px;
+    }
+
+    .card {
+        --bs-card-spacer-y: 1.5rem;
+        --bs-card-spacer-x: 1.5rem;
+    }
+</style>
 
 @section Scripts {
     <script>

@@ -41,8 +41,13 @@
                     <div class="product-status @(item.Stock == 0 ? "status-outofstock" : (item.Stock < 15 ? "status-lowstock" : "status-instock"))">
                         @(item.Stock == 0 ? "Niet op voorraad" : (item.Stock < 15 ? "Bijna uitverkocht" : "In voorraad"))
                     </div>
-                </div>
-                <div class="product-content">
+                </div>                <div class="product-content">
+                    @if (item.Image != null)
+                    {
+                        <div class="product-image">
+                            <img src="data:image;base64,@Convert.ToBase64String(item.Image)" alt="@item.Name" />
+                        </div>
+                    }
                     <div class="product-description">@item.Description</div>
                     <div class="product-details">
                         <div class="price-info">
@@ -75,11 +80,13 @@
                     <a asp-controller="Product" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning"><i
                             class="fa-solid fa-pen"></i></a>
                     <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info"><i
-                            class="fa-solid fa-info"></i></a>
-                    <a asp-controller="Product" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger"><i
+                            class="fa-solid fa-info"></i></a>                    <a asp-controller="Product" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger"><i
                             class="fa-solid fa-trash"></i></a>
                     <a asp-controller="Voorraad" asp-action="Create" asp-route-id="@item.Id" class="btn btn-sm btn-success"><i
                             class="fa-solid fa-truck"></i></a>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="openImageUpload(@item.Id, 'product')">
+                        <i class="fa-solid fa-camera"></i>
+                    </button>
                 </div>
             </div>
         }
@@ -92,8 +99,13 @@
                     <div class="product-status @(item.Stock == 0 ? "status-outofstock" : (item.Stock < 15 ? "status-lowstock" : "status-instock"))">
                         @(item.Stock == 0 ? "Niet op voorraad" : (item.Stock < 15 ? "Bijna uitverkocht" : "In voorraad"))
                     </div>
-                </div>
-                <div class="product-content">
+                </div>                <div class="product-content">
+                    @if (item.Image != null)
+                    {
+                        <div class="product-image">
+                            <img src="data:image;base64,@Convert.ToBase64String(item.Image)" alt="@item.Name" />
+                        </div>
+                    }
                     <div class="product-description">@item.Description</div>
                     <div class="product-details">
                         <div class="usage-info">
@@ -120,6 +132,35 @@
                 </div>
             </div>
         }
+    </div>
+</div>
+
+<!-- Image Upload Modal -->
+<div class="modal fade" id="imageUploadModal" tabindex="-1" aria-labelledby="imageUploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageUploadModalLabel">Upload Afbeelding</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="imageUploadForm" method="post" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" id="itemId" name="id" />
+                    <input type="hidden" id="itemType" name="type" />
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Kies een afbeelding</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                    </div>
+                    <div id="imagePreview" class="text-center" style="display: none;">
+                        <img src="" alt="Preview" style="max-width: 100%; max-height: 200px;" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuleren</button>
+                    <button type="submit" class="btn btn-primary">Uploaden</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -325,38 +366,136 @@
         border-color: #dc3545;
         color: white;
     }
+
+    .product-image {
+        margin-bottom: 15px;
+        text-align: center;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 10px;
+    }
+
+    .product-image img {
+        max-width: 100%;
+        max-height: 200px;
+        object-fit: contain;
+    }
+
+    #imagePreview {
+        margin-top: 15px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .modal-content {
+        background-color: white;
+        border-radius: 12px;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #dee2e6;
+        background-color: #f8f9fa;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #dee2e6;
+        background-color: #f8f9fa;
+        border-radius: 0 0 12px 12px;
+    }
+
+    .btn-primary {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .btn-primary:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
 </style>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const statusFilter = document.getElementById('statusFilter');
-        const typeFilter = document.getElementById('typeFilter');
-        const products = document.querySelectorAll('.product-card');
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const statusFilter = document.getElementById('statusFilter');
+            const typeFilter = document.getElementById('typeFilter');
+            const products = document.querySelectorAll('.product-card');
 
-        function applyFilters() {
-            const statusValue = statusFilter.value;
-            const typeValue = typeFilter.value;
+            function applyFilters() {
+                const statusValue = statusFilter.value;
+                const typeValue = typeFilter.value;
 
-            products.forEach(product => {
-                let show = true; if (statusValue) {
-                    const statusElement = product.querySelector('.product-status');
-                    let status = 'outofstock';
-                    if (statusElement.classList.contains('status-instock') || statusElement.classList.contains('status-lowstock')) {
-                        status = 'instock';
+                products.forEach(product => {
+                    let show = true; if (statusValue) {
+                        const statusElement = product.querySelector('.product-status');
+                        let status = 'outofstock';
+                        if (statusElement.classList.contains('status-instock') || statusElement.classList.contains('status-lowstock')) {
+                            status = 'instock';
+                        }
+                        if (status !== statusValue) show = false;
                     }
-                    if (status !== statusValue) show = false;
-                }
 
-                if (typeValue) {
-                    const type = product.dataset.type;
-                    if (type !== typeValue) show = false;
-                }
+                    if (typeValue) {
+                        const type = product.dataset.type;
+                        if (type !== typeValue) show = false;
+                    }
 
-                product.style.display = show ? 'flex' : 'none';
-            });
+                    product.style.display = show ? 'flex' : 'none';
+                });
+            }
+
+            statusFilter.addEventListener('change', applyFilters);
+            typeFilter.addEventListener('change', applyFilters);
+        });
+
+        function openImageUpload(id, type) {
+            document.getElementById('itemId').value = id;
+            document.getElementById('itemType').value = type;
+            
+            const modal = new bootstrap.Modal(document.getElementById('imageUploadModal'));
+            modal.show();
         }
 
-        statusFilter.addEventListener('change', applyFilters);
-        typeFilter.addEventListener('change', applyFilters);
-    });
-</script>
+        // Preview image before upload
+        document.getElementById('image').addEventListener('change', function(e) {
+            const preview = document.getElementById('imagePreview');
+            const previewImg = preview.querySelector('img');
+            
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+                reader.readAsDataURL(this.files[0]);
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('imageUploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            fetch('/Voorraad/UploadImage', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Er is een fout opgetreden bij het uploaden van de afbeelding.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Er is een fout opgetreden bij het uploaden van de afbeelding.');
+            });
+        });
+    </script>
+}
