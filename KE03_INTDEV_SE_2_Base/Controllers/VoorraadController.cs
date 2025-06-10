@@ -400,5 +400,149 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
             TempData["OrderType"] = orderType;
             return View(viewModel);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> ProcessOrder(Dictionary<int, OrderItemViewModel> orderItems, string orderType, decimal totalAmount)
+        {
+            if (!orderItems.Any())
+            {
+                TempData["ErrorMessage"] = "Geen items geselecteerd voor bestelling.";
+                return RedirectToAction(nameof(Ordercreate));
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {                // Get the Admin customer or create one if it doesn't exist
+                var customer = await _context.Customers
+                    .FirstOrDefaultAsync(c => c.Name.ToLower() == "admin");
+
+                if (customer == null)
+                {
+                    // Create Admin customer if it doesn't exist
+                    customer = new Customer
+                    {
+                        Name = "Admin",
+                        Address = "Matrix Inc. HQ",
+                        Active = true
+                    };
+                    _context.Customers.Add(customer);
+                    await _context.SaveChangesAsync();
+                }
+
+                // Create new order
+                var order = new Order
+                {
+                    OrderDate = DateTime.Now,
+                    CustomerId = customer.Id,
+                    Customer = customer
+                };
+
+                _context.Orders.Add(order);
+                await _context.SaveChangesAsync();
+
+                // Process each order item
+                foreach (var kvp in orderItems)
+                {
+                    var item = kvp.Value;
+                    if (orderType.ToLower() == "normaal")
+                    {
+                        var product = await _context.Products.FindAsync(item.Id);
+                        if (product != null)
+                        {
+                            // Verhoog de voorraad met de bestelde hoeveelheid
+                            product.Stock += item.Quantity;
+                            _logger.LogInformation($"Product {product.Name} voorraad verhoogd met {item.Quantity}. Nieuwe voorraad: {product.Stock}");
+                            
+                            var orderProduct = new OrderProduct
+                            {
+                                OrdersId = order.Id,
+                                ProductsId = product.Id,
+                                Aantal = item.Quantity
+                            };
+                            _context.OrderProducts.Add(orderProduct);
+                        }
+                    }
+                    else // Parts (bulk)
+                    {
+                        var part = await _context.Parts
+                            .Include(p => p.Products)
+                            .FirstOrDefaultAsync(p => p.Id == item.Id);
+
+                        if (part != null)
+                        {
+                            // Verhoog de voorraad met de bestelde hoeveelheid
+                            part.Stock += item.Quantity;
+                            _logger.LogInformation($"Onderdeel {part.Name} voorraad verhoogd met {item.Quantity}. Nieuwe voorraad: {part.Stock}");
+
+                            // Zoek een bestaand product voor dit onderdeel
+                            var existingProduct = part.Products?.FirstOrDefault();
+
+                            // Als er geen bestaand product is, maak een nieuwe aan
+                            if (existingProduct == null)
+                            {
+                                var newProduct = new Product
+                                {
+                                    Name = $"{part.Name} (Onderdeel)",
+                                    Price = part.Price,
+                                    Stock = 0  // Voorraad wordt bijgehouden in het onderdeel
+                                };
+
+                                // Voeg het nieuwe product toe aan de database
+                                _context.Products.Add(newProduct);
+                                await _context.SaveChangesAsync();
+
+                                // Voeg het nieuwe product toe aan de parts-products relatie
+                                _context.Entry(part)
+                                    .Collection(p => p.Products)
+                                    .Load();
+                                part.Products?.Add(newProduct);
+
+                                existingProduct = newProduct;
+                            }
+
+                            var orderProduct = new OrderProduct
+                            {
+                                OrdersId = order.Id,
+                                ProductsId = existingProduct.Id,
+                                Aantal = item.Quantity
+                            };
+                            _context.OrderProducts.Add(orderProduct);
+                        }
+                    }
+                }                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                // Maak de sessie leeg
+                HttpContext.Session.Remove("CurrentOrder");
+
+                // Controleer of er een returnUrl parameter is
+                var returnUrl = Request.Query["returnUrl"].ToString();
+                if (!string.IsNullOrEmpty(returnUrl))
+                {
+                    // Valideer de returnUrl om veiligheidsrisico's te voorkomen
+                    if (Url.IsLocalUrl(returnUrl))
+                    {
+                        return Redirect(returnUrl);
+                    }
+                }
+                
+                // Als er geen returnUrl is of als deze ongeldig is, ga naar voorraad index
+                return RedirectToAction("Index", "Voorraad");
+            }
+            catch (InvalidOperationException ex)
+            {
+                await transaction.RollbackAsync();
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction(nameof(OrderConfirm));
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Error processing order");
+                TempData["ErrorMessage"] = "Er is een fout opgetreden bij het verwerken van de bestelling.";
+                return RedirectToAction(nameof(OrderConfirm));
+            }
+        }
     }
 }
