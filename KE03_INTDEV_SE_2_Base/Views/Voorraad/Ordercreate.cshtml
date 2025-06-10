@@ -38,8 +38,7 @@
         <form id="orderForm" asp-controller="Voorraad" asp-action="OrderConfirm" method="post">
             <input type="hidden" name="orderType" value="@orderType" />
             <div id="orderItemInputs"></div>
-            
-            <div class="table-responsive">
+              <div class="table-responsive">
                 <table class="table">
                     <thead>
                         <tr>
@@ -51,6 +50,31 @@
                         </tr>
                     </thead>
                     <tbody id="orderItems">
+                        @if (Model.OrderProducts != null)
+                        {
+                            @foreach (var item in Model.OrderProducts)
+                            {
+                                <tr class="order-row" data-id="@item.ProductId">
+                                    <td>@item.ProductName</td>
+                                    <td>@item.CurrentStock</td>
+                                    <td>€@item.Price.ToString("N2")</td>
+                                    <td>
+                                        <input type="number" 
+                                               class="form-control quantity-input" 
+                                               name="quantities[@item.ProductId]" 
+                                               value="@item.Quantity" 
+                                               min="1" 
+                                               data-item-id="@item.ProductId"
+                                               data-price="@item.Price.ToString("F2").Replace(",", ".")" />
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm remove-item" data-id="@item.ProductId">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
                     </tbody>
                     <tfoot>
                         <tr class="total-row">
@@ -253,6 +277,52 @@
             const minItems = parseInt(document.getElementById('submitOrder').dataset.minItems);
             const orderForm = document.getElementById('orderForm');
 
+            // Event handler for quantity changes with debouncing
+            let updateTimeout;
+            document.addEventListener('input', function(e) {
+                if (e.target.classList.contains('quantity-input')) {
+                    clearTimeout(updateTimeout);
+                    updateTimeout = setTimeout(() => {
+                        const quantityInput = e.target;
+                        const itemId = parseInt(quantityInput.dataset.id);
+                        const quantity = parseInt(quantityInput.value) || 0;
+
+                        // Update in session
+                        fetch('/Voorraad/UpdateOrderQuantity', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                            },
+                            body: JSON.stringify({ 
+                                id: itemId,
+                                quantity: quantity
+                            })
+                        })
+                        .catch(error => {
+                            console.error('Error updating quantity:', error);
+                        });
+
+                        updateTotals();
+                    }, 300); // Debounce for 300ms
+                }
+            });
+
+            // Initialize existing order items from the model
+            document.querySelectorAll('.order-row').forEach(row => {
+                const id = parseInt(row.dataset.id);
+                const nameElement = row.querySelector('.product-info span');
+                const quantityInput = row.querySelector('.quantity-input');
+                
+                if (id && nameElement && quantityInput) {
+                    orderItems.set(id, {
+                        name: nameElement.textContent,
+                        stock: parseInt(quantityInput.dataset.stock) || 0,
+                        price: parseFloat(quantityInput.dataset.price) || 0
+                    });
+                }
+            });
+
             addButton.addEventListener('click', function() {
                 const option = productSelect.selectedOptions[0];
                 if (!option || !option.value) {
@@ -261,11 +331,13 @@
                 }
                 selectWarning.style.display = 'none';
 
-                const id = option.value;
+                const id = parseInt(option.value);
                 if (orderItems.has(id)) {
                     const input = document.querySelector(`input[data-id="${id}"]`);
-                    input.value = parseInt(input.value) + 1;
-                    input.dispatchEvent(new Event('change'));
+                    if (input) {
+                        input.value = parseInt(input.value) + 1;
+                        input.dispatchEvent(new Event('input'));
+                    }
                     return;
                 }
 
@@ -274,12 +346,13 @@
                 const price = parseFloat(option.dataset.price);
 
                 const row = document.createElement('tr');
+                row.className = 'order-row';
+                row.dataset.id = id;
                 row.innerHTML = `
                     <td class="product-info">
                         <span>${name}</span>
                         <input type="hidden" name="Items[${orderItems.size}].Id" value="${id}">
                         <input type="hidden" name="Items[${orderItems.size}].Name" value="${name}">
-                        <input type="hidden" name="Items[${orderItems.size}].Price" value="${price}">
                     </td>
                     <td class="stock-info ${stock > 0 ? 'in-stock' : 'out-of-stock'}">
                         ${stock > 0 ? 
@@ -294,6 +367,7 @@
                                    name="Items[${orderItems.size}].Quantity"
                                    data-id="${id}"
                                    data-price="${price}"
+                                   data-stock="${stock}"
                                    title="${stock === 0 ? 'Dit item wordt bijbesteld' : ''}">
                         </div>
                     </td>
@@ -306,7 +380,9 @@
                 orderItemsContainer.appendChild(row);
 
                 const input = row.querySelector('.quantity-input');
-                input.addEventListener('change', updateTotals);
+                input.addEventListener('change', function() {
+                    this.dispatchEvent(new Event('input'));
+                });
 
                 const deleteBtn = row.querySelector('.delete-item');
                 deleteBtn.addEventListener('click', function() {
@@ -316,7 +392,8 @@
                     reorderFormIndices();
                 });
 
-                updateTotals();
+                // Trigger the input event to save to session
+                input.dispatchEvent(new Event('input'));
                 productSelect.value = '';
             });
 
@@ -340,7 +417,7 @@
                     totalItems += quantity;
                 });
                 
-                document.getElementById('totalPrice').textContent = '€' + total.toFixed(2);
+                document.getElementById('totalPrice').textContent = `€${total.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                 
                 const submitButton = document.getElementById('submitOrder');
                 if (totalItems < minItems) {
@@ -353,5 +430,8 @@
                     warningMessage.style.display = 'none';
                 }
             }
+
+            // Initialize totals when the page loads
+            updateTotals();
         });
     </script>
