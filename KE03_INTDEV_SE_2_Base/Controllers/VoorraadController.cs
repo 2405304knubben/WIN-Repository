@@ -43,8 +43,6 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
             var orderItems = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems")
                 ?? new List<VoorraadItemViewModel>();
 
-            // Controleer of het item (op basis van Id én Type) nog niet in de lijst staat
-            // Alleen toevoegen als id niet 0 is (0 wordt gebruikt om de pagina te tonen zonder nieuw item toe te voegen)
             if (id != 0 && !orderItems.Any(x => x.Id == id && x.Type.Equals(type, StringComparison.OrdinalIgnoreCase)))
             {
                 if (type.ToLower() == "product")
@@ -59,7 +57,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             Type = "Product",
                             CurrentStock = product.Stock,
                             OrderAmount = 1,
-                            Price = product.Price // Prijs meegeven,
+                            Price = product.Price
                         });
                     }
                 }
@@ -75,13 +73,13 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             Type = "Part",
                             CurrentStock = part.Stock,
                             OrderAmount = 1,
-                            Price = part.Price // Prijs meegeven,
+                            Price = part.Price
                         });
                     }
                 }
                 HttpContext.Session.SetObjectAsJson("VoorraadItems", orderItems);
             }
-            // De view 'Create.cshtml' wordt gebruikt om de lijst te tonen.
+
             return View(orderItems);
         }
 
@@ -159,7 +157,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
             var orderItems = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems")
                 ?? new List<VoorraadItemViewModel>();
 
-            // Check of item al in lijst zit op basis van Id en Type
+            // Check if item already exists
             if (!orderItems.Any(x => x.Id == id && x.Type.Equals(type, StringComparison.OrdinalIgnoreCase)))
             {
                 if (type.ToLower() == "product")
@@ -174,7 +172,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             Type = "Product",
                             CurrentStock = product.Stock,
                             OrderAmount = 1,
-                            Price = product.Price // Prijs meegeven
+                            Price = product.Price
                         });
                     }
                 }
@@ -190,27 +188,28 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             Type = "Part",
                             CurrentStock = part.Stock,
                             OrderAmount = 1,
-                            Price = part.Price // Prijs meegeven
+                            Price = part.Price
                         });
                     }
                 }
+
+                HttpContext.Session.SetObjectAsJson("VoorraadItems", orderItems);
             }
 
-            HttpContext.Session.SetObjectAsJson("VoorraadItems", orderItems);
-            // Redirect naar de Create view om de bijgewerkte lijst te tonen.
-            // id=0 en een leeg type zorgen ervoor dat er niet opnieuw een item wordt toegevoegd door de Create action.
             return RedirectToAction(nameof(Create), new { id = 0, type = "" });
-        }
-
-        [HttpPost]
+        }        [HttpPost]
         public IActionResult UpdateAmount([FromBody] UpdateAmountModel model)
         {
             var items = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems");
-            var item = items?.FirstOrDefault(i => i.Id == model.Id);
-            if (item != null)
+            if (items != null)
             {
-                item.OrderAmount = model.Amount;
-                HttpContext.Session.SetObjectAsJson("VoorraadItems", items);
+                var item = items.FirstOrDefault(i => i.Id == model.Id);
+                if (item != null)
+                {
+                    item.OrderAmount = model.Amount;
+                    // Only update the order amount in the session, preserving other fields
+                    HttpContext.Session.SetObjectAsJson("VoorraadItems", items);
+                }
             }
             return Ok();
         }
@@ -339,50 +338,68 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         }        [HttpGet]
         public async Task<IActionResult> Ordercreate(string type = "normaal")
         {
-            // Initialize or get the session variable
-            var orderItems = HttpContext.Session.GetObjectFromJson<List<OrderItemViewModel>>("OrderItems") 
-                ?? new List<OrderItemViewModel>();
+            // Get existing order from session if it exists
+            var existingOrder = HttpContext.Session.GetObjectFromJson<OrderEditViewModel>("OrderItems");
+            var existingQuantities = existingOrder?.AvailableItems
+                .ToDictionary(i => i.Id, i => i.Quantity) ?? new Dictionary<int, int>();
             
             ViewBag.OrderType = type;
+            
+            // Create new view model with available items
+            var items = type.ToLower() == "normaal" ?
+                await _context.Products
+                    .Select(p => new OrderItemViewModel
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Stock = p.Stock,
+                        Price = p.Price,
+                        Quantity = 0
+                    })
+                    .ToListAsync() :
+                await _context.Parts
+                    .Select(p => new OrderItemViewModel
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Stock = p.Stock,
+                        Price = p.Price,
+                        Quantity = 0
+                    })
+                    .ToListAsync();
+
+            // Restore quantities from session
+            foreach (var item in items)
+            {
+                if (existingQuantities.TryGetValue(item.Id, out int quantity))
+                {
+                    item.Quantity = quantity;
+                }
+            }
+
             var viewModel = new OrderEditViewModel
             {
                 OrderDate = DateTime.Now,
-                AvailableItems = await (type.ToLower() == "normaal" ?
-                    _context.Products
-                        .Select(p => new OrderItemViewModel
-                        {
-                            Id = p.Id,
-                            Name = p.Name,
-                            Stock = p.Stock,
-                            Price = p.Price
-                        })
-                        .ToListAsync() :
-                    _context.Parts
-                        .Select(p => new OrderItemViewModel
-                        {
-                            Id = p.Id,
-                            Name = p.Name,
-                            Stock = p.Stock,
-                            Price = p.Price
-                        })
-                        .ToListAsync())
+                AvailableItems = items
             };
 
             // Store the viewModel in session
-            HttpContext.Session.SetObjectAsJson("CurrentOrder", viewModel);
+            HttpContext.Session.SetObjectAsJson("OrderItems", viewModel);
 
             return View(viewModel);
         }
 
         public IActionResult OrderConfirm()
         {
-            var viewModel = HttpContext.Session.GetObjectFromJson<OrderEditViewModel>("CurrentOrder");
+            var viewModel = HttpContext.Session.GetObjectFromJson<OrderEditViewModel>("OrderItems");
             if (viewModel == null)
             {
                 return RedirectToAction(nameof(Ordercreate));
             }
             return View(viewModel);
-        }        [HttpPost]
+        }
+
+        [HttpPost]
         public IActionResult OrderConfirm(string orderType, List<OrderItemViewModel> Items)
         {
             if (Items == null || !Items.Any())
@@ -391,14 +408,58 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                 return RedirectToAction(nameof(Ordercreate));
             }
 
-            var viewModel = new OrderEditViewModel
+            var order = HttpContext.Session.GetObjectFromJson<OrderEditViewModel>("OrderItems");
+            if (order != null)
             {
-                OrderDate = DateTime.Now,
-                AvailableItems = Items // Store the items in the model
-            };
+                // Update quantities from the form submission
+                foreach (var item in Items.Where(i => i.Quantity > 0))
+                {
+                    var savedItem = order.AvailableItems.FirstOrDefault(i => i.Id == item.Id);
+                    if (savedItem != null)
+                    {
+                        savedItem.Quantity = item.Quantity;
+                    }
+                }
+                
+                HttpContext.Session.SetObjectAsJson("OrderItems", order);
+            }
+            else
+            {
+                order = new OrderEditViewModel
+                {
+                    OrderDate = DateTime.Now,
+                    AvailableItems = Items.Where(i => i.Quantity > 0).ToList()
+                };
+                HttpContext.Session.SetObjectAsJson("OrderItems", order);
+            }
 
             TempData["OrderType"] = orderType;
-            return View(viewModel);
+            return View(order);
+        }
+
+        public class UpdateQuantityModel
+        {
+            public int Id { get; set; }
+            public int Quantity { get; set; }
+        }
+
+        [HttpPost]
+        public IActionResult UpdateOrderQuantity([FromBody] UpdateQuantityModel model)
+        {
+            var order = HttpContext.Session.GetObjectFromJson<OrderEditViewModel>("OrderItems");
+            if (order?.AvailableItems != null)
+            {
+                var existingItem = order.AvailableItems.FirstOrDefault(i => i.Id == model.Id);
+                if (existingItem != null)
+                {
+                    // Only update the quantity
+                    existingItem.Quantity = model.Quantity;
+                    
+                    // Save back to session
+                    HttpContext.Session.SetObjectAsJson("OrderItems", order);
+                }
+            }
+            return Ok();
         }
     }
 }
