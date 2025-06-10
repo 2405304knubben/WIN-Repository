@@ -38,10 +38,13 @@
                           <a class="nav-link btn btn-black text-success" asp-area="" asp-controller="Voorraad" asp-action="Order">Bijbestellen</a>  
                       </li>  
                   </ul>  
-                  <form class="d-flex" asp-controller="Home" asp-action="Search" method="post">  
-                      <input class="form-control me-2" type="search" name="search" placeholder="Zoeken" aria-label="Search">  
-                      <button class="btn btn-outline-success" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>  
-                  </form>  
+                  @if (ViewContext.RouteData.Values["controller"].ToString() == "Voorraad")
+                  {
+                    <form class="d-flex" asp-controller="Home" asp-action="Search" method="post">  
+                        <input class="form-control me-2" type="search" name="search" placeholder="Zoeken" aria-label="Search">  
+                        <button class="btn btn-outline-success" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>  
+                    </form>  
+                  }
                   <ul class="navbar-nav flex-grow-1 justify-content-end">  
                       <li class="nav-item dropdown">  
                           <a class="nav-link dropdown-toggle btn btn-black text-success" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">  
