@@ -270,11 +270,13 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                                 }
                             }
                         }
-                    }
-                    await _context.SaveChangesAsync();
-                    HttpContext.Session.Remove("VoorraadItems"); // Leeg de "winkelwagen" na succesvolle bestelling.
+                    }                    await _context.SaveChangesAsync();
+                    // Clear all order-related session data
+                    HttpContext.Session.Remove("VoorraadItems");
+                    HttpContext.Session.Remove("OrderItems");
+                    HttpContext.Session.Remove("CurrentOrder");
                     TempData["SuccessMessage"] = "Voorraad succesvol bijgewerkt!";
-                    return RedirectToAction(nameof(Index)); // Na succes, terug naar het overzicht van producten/onderdelen.
+                    return RedirectToAction(nameof(Index));
                 }
                 else
                 {
@@ -571,24 +573,20 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             _context.OrderProducts.Add(orderProduct);
                         }
                     }
-                }                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                }                await _context.SaveChangesAsync();                await transaction.CommitAsync();
 
-                // Maak de sessie leeg
+                // Clear all order-related session data
                 HttpContext.Session.Remove("CurrentOrder");
+                HttpContext.Session.Remove("OrderItems");
+                HttpContext.Session.Remove("VoorraadItems");
 
-                // Controleer of er een returnUrl parameter is
+                // Check for return URL
                 var returnUrl = Request.Query["returnUrl"].ToString();
-                if (!string.IsNullOrEmpty(returnUrl))
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 {
-                    // Valideer de returnUrl om veiligheidsrisico's te voorkomen
-                    if (Url.IsLocalUrl(returnUrl))
-                    {
-                        return Redirect(returnUrl);
-                    }
+                    return Redirect(returnUrl);
                 }
                 
-                // Als er geen returnUrl is of als deze ongeldig is, ga naar voorraad index
                 return RedirectToAction("Index", "Voorraad");
             }
             catch (InvalidOperationException ex)
@@ -598,11 +596,13 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                 return RedirectToAction(nameof(OrderConfirm));
             }
             catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
+            {                await transaction.RollbackAsync();
                 _logger.LogError(ex, "Error processing order");
                 TempData["ErrorMessage"] = "Er is een fout opgetreden bij het verwerken van de bestelling.";
-                return RedirectToAction(nameof(OrderConfirm));
+
+                // In case of error, keep the session data for retry
+                var viewModel = HttpContext.Session.GetObjectFromJson<OrderEditViewModel>("CurrentOrder");
+                return View(nameof(OrderConfirm), viewModel);
             }
         }
     }
