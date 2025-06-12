@@ -32,12 +32,6 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
             return View(viewModel);
         }
 
-        public IActionResult Order()
-        {
-            var orderItems = HttpContext.Session.GetObjectFromJson<List<OrderItemViewModel>>("OrderItems") ?? new List<OrderItemViewModel>();
-            return View(orderItems);
-        }
-
         public IActionResult Create(int id, string type = "product")
         {
             var orderItems = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems")
@@ -50,7 +44,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                     var product = _context.Products.Find(id);
                     if (product != null)
                     {
-                        orderItems.Add(new VoorraadItemViewModel
+                        var savedOrder = new VoorraadItemViewModel
                         {
                             Id = product.Id,
                             Name = product.Name,
@@ -58,7 +52,8 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             CurrentStock = product.Stock,
                             OrderAmount = 1,
                             Price = product.Price
-                        });
+                        };
+                        orderItems.Add(savedOrder);
                     }
                 }
                 else if (type.ToLower() == "part")
@@ -66,7 +61,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                     var part = _context.Parts.Find(id);
                     if (part != null)
                     {
-                        orderItems.Add(new VoorraadItemViewModel
+                        var savedOrder = new VoorraadItemViewModel
                         {
                             Id = part.Id,
                             Name = part.Name,
@@ -74,7 +69,8 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             CurrentStock = part.Stock,
                             OrderAmount = 1,
                             Price = part.Price
-                        });
+                        };
+                        orderItems.Add(savedOrder);
                     }
                 }
                 HttpContext.Session.SetObjectAsJson("VoorraadItems", orderItems);
@@ -152,66 +148,24 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddToVoorraad(int id, string type)
-        {
-            var orderItems = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems")
-                ?? new List<VoorraadItemViewModel>();
-
-            // Check if item already exists
-            if (!orderItems.Any(x => x.Id == id && x.Type.Equals(type, StringComparison.OrdinalIgnoreCase)))
-            {
-                if (type.ToLower() == "product")
-                {
-                    var product = _context.Products.Find(id);
-                    if (product != null)
-                    {
-                        orderItems.Add(new VoorraadItemViewModel
-                        {
-                            Id = product.Id,
-                            Name = product.Name,
-                            Type = "Product",
-                            CurrentStock = product.Stock,
-                            OrderAmount = 1,
-                            Price = product.Price
-                        });
-                    }
-                }
-                else if (type.ToLower() == "part")
-                {
-                    var part = _context.Parts.Find(id);
-                    if (part != null)
-                    {
-                        orderItems.Add(new VoorraadItemViewModel
-                        {
-                            Id = part.Id,
-                            Name = part.Name,
-                            Type = "Part",
-                            CurrentStock = part.Stock,
-                            OrderAmount = 1,
-                            Price = part.Price
-                        });
-                    }
-                }
-
-                HttpContext.Session.SetObjectAsJson("VoorraadItems", orderItems);
-            }
-
-            return RedirectToAction(nameof(Create), new { id = 0, type = "" });
-        }        [HttpPost]
         public IActionResult UpdateAmount([FromBody] UpdateAmountModel model)
         {
+            _logger.LogInformation($"Updating amount for item {model.Id} to {model.Amount}");
             var items = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems");
+            
             if (items != null)
             {
                 var item = items.FirstOrDefault(i => i.Id == model.Id);
                 if (item != null)
                 {
                     item.OrderAmount = model.Amount;
-                    // Only update the order amount in the session, preserving other fields
                     HttpContext.Session.SetObjectAsJson("VoorraadItems", items);
+                    _logger.LogInformation($"Successfully updated amount for {item.Name} to {model.Amount}");
+                    return Ok(new { success = true });
                 }
             }
-            return Ok();
+            
+            return BadRequest(new { success = false, message = "Item not found in session" });
         }
 
         [HttpPost]
