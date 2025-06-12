@@ -41,13 +41,22 @@
                     <div class="product-status @(item.Stock == 0 ? "status-outofstock" : (item.Stock < 15 ? "status-lowstock" : "status-instock"))">
                         @(item.Stock == 0 ? "Niet op voorraad" : (item.Stock < 15 ? "Bijna uitverkocht" : "In voorraad"))
                     </div>
-                </div>                <div class="product-content">
                     @if (item.Image != null)
                     {
                         <div class="product-image">
                             <img src="data:image;base64,@Convert.ToBase64String(item.Image)" alt="@item.Name" />
                         </div>
                     }
+                    else
+                    {
+                        <div class="product-image">
+                            <img src="/Images/no-image.png" alt="Geen afbeelding beschikbaar" />
+                        </div>
+                    }
+                </div>                
+                
+                <div class="product-content">
+                    
                     <div class="product-description">@item.Description</div>
                     <div class="product-details">
                         <div class="price-info">
@@ -99,13 +108,14 @@
                     <div class="product-status @(item.Stock == 0 ? "status-outofstock" : (item.Stock < 15 ? "status-lowstock" : "status-instock"))">
                         @(item.Stock == 0 ? "Niet op voorraad" : (item.Stock < 15 ? "Bijna uitverkocht" : "In voorraad"))
                     </div>
-                </div>                <div class="product-content">
                     @if (item.Image != null)
                     {
                         <div class="product-image">
                             <img src="data:image;base64,@Convert.ToBase64String(item.Image)" alt="@item.Name" />
                         </div>
                     }
+                </div>                <div class="product-content">
+                   
                     <div class="product-description">@item.Description</div>
                     <div class="product-details">
                         <div class="usage-info">
