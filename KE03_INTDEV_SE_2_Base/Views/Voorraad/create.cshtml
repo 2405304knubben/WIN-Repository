@@ -48,14 +48,12 @@
                                         <input type="number" name="quantities[@item.Id]"
                                                class="form-control quantity-input" style="width: 100px;"
                                                value="@item.OrderAmount" min="1" required
-                                               data-price="@item.Price.ToString("F2").Replace(",", ".")" data-id="@item.Id" />
+                                               data-item-id="@item.Id" />
                                     </td>
-                                    <td class="subtotal" data-id="@item.Id">
-                                        €@((item.Price * item.OrderAmount).ToString("N2"))
-                                    </td>
+                                    <td class="subtotal">€@((item.Price * item.OrderAmount).ToString("N2"))</td>
                                     <td>
-                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(@item.Id)">
-                                            <i class="fa-solid fa-times"></i>
+                                        <button type="button" class="btn btn-danger btn-sm remove-item" data-item-id="@item.Id">
+                                            <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
                                 </tr>
@@ -64,14 +62,13 @@
                         <tfoot>
                             <tr>
                                 <td colspan="5" class="text-end"><strong>Totaal:</strong></td>
-                                <td id="grandTotal">€0.00</td>
-                                <td></td>
+                                <td colspan="2" id="grandTotal">€@Model.Sum(i => i.Price * i.OrderAmount).ToString("N2")</td>
                             </tr>
                         </tfoot>
                     </table>
 
-                    <div class="d-flex justify-content-between mt-4">
-                        <a asp-controller="Voorraad" asp-action="Index" class="btn btn-secondary">
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <a asp-controller="Voorraad" asp-action="Index" class="btn btn-primary">
                             <i class="fa-solid fa-plus"></i> Meer producten/onderdelen toevoegen
                         </a>
                         <button type="button" class="btn btn-success" onclick="showConfirmModal()">
@@ -102,18 +99,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="company-details mb-3">
-                    <h6>Bestelling voor:</h6>
-                    <p class="mb-1"><strong>Matrix.Inc</strong></p>
-                    <p class="mb-1">Telefoon: 123-456-789</p>
-                </div>
-                <hr/>
-                <h6>Order Overzicht:</h6>
-                <div id="modalOrderSummary">
-                    <!-- Items worden hier dynamisch ingevoegd -->
-                </div>
-                <hr/>
-                <p class="text-end"><strong>Totaal Te Bestellen: <span id="modalGrandTotal">€0.00</span></strong></p>
                 <p>Weet u zeker dat u deze bestelling wilt plaatsen?</p>
             </div>
             <div class="modal-footer">
@@ -124,107 +109,113 @@
     </div>
 </div>
 
-<style>
-    .table {
-        margin-bottom: 1.5rem;
-    }
-
-    .table th,
-    .table td {
-        padding: 1rem;
-        vertical-align: middle;
-    }
-
-    .quantity-input {
-        min-width: 100px;
-    }
-
-    .card {
-        --bs-card-spacer-y: 1.5rem;
-        --bs-card-spacer-x: 1.5rem;
-    }
-</style>
-
 @section Scripts {
     <script>
-        function calculateRowSubtotal(inputElement) {
-            const quantity = parseInt(inputElement.value) || 0;
-            // Zorg ervoor dat data-price een punt als decimaalteken gebruikt voor parseFloat
-            const priceText = inputElement.dataset.price; 
-            const price = parseFloat(priceText) || 0;
-            const subtotal = quantity * price;
-            const subtotalCell = inputElement.closest('tr').querySelector('.subtotal');
-            // Gebruik toLocaleString voor correcte weergave met komma voor decimalen
-            subtotalCell.textContent = `€${subtotal.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            calculateGrandTotal();
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            // Debounce function to limit the rate at which we make AJAX calls
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
 
-        function calculateGrandTotal() {
-            let grandTotal = 0;
-            document.querySelectorAll('.subtotal').forEach(cell => {
-                // Converteer de tekst (bijv. €123,45) naar een getal voor de berekening
-                const subtotalText = cell.textContent.replace('€', '').replace(/\./g, '').replace(',', '.');
-                grandTotal += parseFloat(subtotalText) || 0;
-            });
-            document.getElementById('grandTotal').textContent = `€${grandTotal.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        }
+            // Calculate subtotal for a row
+            function calculateRowSubtotal(input) {
+                const row = input.closest('tr');
+                const price = parseFloat(row.querySelector('td:nth-child(4)').innerText.replace('€', '').replace(',', '.'));
+                const quantity = parseInt(input.value) || 0;
+                const subtotal = price * quantity;
+                row.querySelector('.subtotal').innerText = `€${subtotal.toFixed(2)}`;
+                calculateGrandTotal();
+            }
 
-        function removeItem(itemId) {
-            fetch('/Voorraad/RemoveItem', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Voeg AntiForgeryToken header toe als ValidateAntiForgeryToken op de POST action staat
-                    // 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value 
-                },
-                body: JSON.stringify({ id: itemId }) 
-            })
-            .then(response => {
-                if (response.ok) {
-                    window.location.reload(); // Herlaad de pagina om de lijst bij te werken.
-                } else {
-                    alert('Fout bij verwijderen item.');
+            // Calculate grand total
+            function calculateGrandTotal() {
+                const subtotals = [...document.querySelectorAll('.subtotal')];
+                const total = subtotals.reduce((sum, el) => {
+                    return sum + parseFloat(el.innerText.replace('€', '').replace(',', '.'));
+                }, 0);
+                document.getElementById('grandTotal').innerText = `€${total.toFixed(2)}`;
+            }
+
+            // Handle quantity changes with debouncing
+            const updateQuantity = debounce(async function(input) {
+                const itemId = input.dataset.itemId;
+                const amount = parseInt(input.value);
+                
+                try {
+                    const response = await fetch('/Voorraad/UpdateAmount', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        },
+                        body: JSON.stringify({
+                            id: parseInt(itemId),
+                            amount: amount
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+
+                    calculateRowSubtotal(input);
+                } catch (error) {
+                    console.error('Error updating quantity:', error);
                 }
-            })
-            .catch(error => {
-                console.error('Error removing item:', error);
-                alert('Netwerkfout bij verwijderen item.');
-            });
-        }
+            }, 300);
 
-        function showConfirmModal() {
-            let modalSummaryHtml = '<ul class="list-unstyled">';
-            let grandTotalModal = 0;
-            document.querySelectorAll('tbody tr').forEach(row => {
-                const type = row.cells[0].textContent;
-                const name = row.cells[1].textContent;
-                const quantityInput = row.querySelector('.quantity-input');
-                const quantity = parseInt(quantityInput.value);
-                const priceText = quantityInput.dataset.price;
-                const price = parseFloat(priceText);
-                const subtotal = quantity * price;
-                grandTotalModal += subtotal;
-                modalSummaryHtml += `<li>${type} - ${name}: ${quantity} x €${price.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} = €${subtotal.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</li>`;
-            });
-            modalSummaryHtml += '</ul>';
-            
-            document.getElementById('modalOrderSummary').innerHTML = modalSummaryHtml;
-            document.getElementById('modalGrandTotal').textContent = `€${grandTotalModal.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-            var confirmModal = new bootstrap.Modal(document.getElementById('confirmOrderModal'));
-            confirmModal.show();
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
+            // Add event listeners to all quantity inputs
             document.querySelectorAll('.quantity-input').forEach(input => {
-                input.addEventListener('input', function () {
-                    calculateRowSubtotal(this);
-                });
-                // Bereken subtotal voor elk item direct bij het laden van de pagina
+                input.addEventListener('input', () => updateQuantity(input));
                 calculateRowSubtotal(input);
             });
-            // Bereken het eindtotaal na het initialiseren van alle subtotals
-            // calculateGrandTotal(); // Wordt al aangeroepen vanuit calculateRowSubtotal
+
+            // Handle remove item buttons
+            document.querySelectorAll('.remove-item').forEach(button => {
+                button.addEventListener('click', async function() {
+                    const itemId = this.dataset.itemId;
+                    try {
+                        const response = await fetch('/Voorraad/RemoveItem', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                            },
+                            body: JSON.stringify({
+                                id: parseInt(itemId)
+                            })
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+
+                        // Remove the row from the table
+                        this.closest('tr').remove();
+                        calculateGrandTotal();
+
+                        // If no items left, refresh the page
+                        if (document.querySelectorAll('tbody tr').length === 0) {
+                            window.location.reload();
+                        }
+                    } catch (error) {
+                        console.error('Error removing item:', error);
+                    }
+                });
+            });
         });
+
+        function showConfirmModal() {
+            const modal = new bootstrap.Modal(document.getElementById('confirmOrderModal'));
+            modal.show();
+        }
     </script>
 }
