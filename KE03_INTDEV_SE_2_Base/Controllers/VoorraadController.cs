@@ -152,7 +152,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         {
             _logger.LogInformation($"Updating amount for item {model.Id} to {model.Amount}");
             var items = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems");
-            
+
             if (items != null)
             {
                 var item = items.FirstOrDefault(i => i.Id == model.Id);
@@ -164,7 +164,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                     return Ok(new { success = true });
                 }
             }
-            
+
             return BadRequest(new { success = false, message = "Item not found in session" });
         }
 
@@ -176,7 +176,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
             {
                 // Verwijder item op basis van Id. Als Id's niet uniek zijn over Producten/Parts,
                 // zou je hier ook op Type moeten filteren (model.Type meegeven vanuit JS).
-                items.RemoveAll(i => i.Id == model.Id); 
+                items.RemoveAll(i => i.Id == model.Id);
                 if (items.Any())
                 {
                     HttpContext.Session.SetObjectAsJson("VoorraadItems", items);
@@ -193,7 +193,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         public async Task<IActionResult> SubmitOrder(Dictionary<int, int> quantities)
         {
             // Haal de actuele lijst van items uit de sessie om te verwerken.
-            var itemsToProcess = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems") 
+            var itemsToProcess = HttpContext.Session.GetObjectFromJson<List<VoorraadItemViewModel>>("VoorraadItems")
                                       ?? new List<VoorraadItemViewModel>();
             try
             {
@@ -224,7 +224,8 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                                 }
                             }
                         }
-                    }                    await _context.SaveChangesAsync();
+                    }
+                    await _context.SaveChangesAsync();
                     // Clear all order-related session data
                     HttpContext.Session.Remove("VoorraadItems");
                     HttpContext.Session.Remove("OrderItems");
@@ -236,7 +237,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                 {
                     TempData["ErrorMessage"] = "Geen items in de lijst om te bestellen.";
                     // Stuur terug naar de (lege) Create pagina. id=0 voorkomt dat de Create action een item probeert toe te voegen.
-                    return RedirectToAction(nameof(Create), new { id = 0 }); 
+                    return RedirectToAction(nameof(Create), new { id = 0 });
                 }
             }
             catch (Exception ex)
@@ -291,16 +292,17 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         public class RemoveItemModel
         {
             public int Id { get; set; }
-        }        [HttpGet]
+        }
+        [HttpGet]
         public async Task<IActionResult> Ordercreate(string type = "normaal")
         {
             // Get existing order from session if it exists
             var existingOrder = HttpContext.Session.GetObjectFromJson<OrderEditViewModel>("OrderItems");
             var existingQuantities = existingOrder?.AvailableItems
                 .ToDictionary(i => i.Id, i => i.Quantity) ?? new Dictionary<int, int>();
-            
+
             ViewBag.OrderType = type;
-            
+
             // Create new view model with available items
             var items = type.ToLower() == "normaal" ?
                 await _context.Products
@@ -376,7 +378,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                         savedItem.Quantity = item.Quantity;
                     }
                 }
-                
+
                 HttpContext.Session.SetObjectAsJson("OrderItems", order);
             }
             else
@@ -410,7 +412,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                 {
                     // Only update the quantity
                     existingItem.Quantity = model.Quantity;
-                    
+
                     // Save back to session
                     HttpContext.Session.SetObjectAsJson("OrderItems", order);
                 }
@@ -470,7 +472,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             // Verhoog de voorraad met de bestelde hoeveelheid
                             product.Stock += item.Quantity;
                             _logger.LogInformation($"Product {product.Name} voorraad verhoogd met {item.Quantity}. Nieuwe voorraad: {product.Stock}");
-                            
+
                             var orderProduct = new OrderProduct
                             {
                                 OrdersId = order.Id,
@@ -527,7 +529,8 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             _context.OrderProducts.Add(orderProduct);
                         }
                     }
-                }                await _context.SaveChangesAsync();                await transaction.CommitAsync();
+                }
+                await _context.SaveChangesAsync(); await transaction.CommitAsync();
 
                 // Clear all order-related session data
                 HttpContext.Session.Remove("CurrentOrder");
@@ -540,7 +543,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                 {
                     return Redirect(returnUrl);
                 }
-                
+
                 return RedirectToAction("Index", "Voorraad");
             }
             catch (InvalidOperationException ex)
@@ -550,7 +553,8 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                 return RedirectToAction(nameof(OrderConfirm));
             }
             catch (Exception ex)
-            {                await transaction.RollbackAsync();
+            {
+                await transaction.RollbackAsync();
                 _logger.LogError(ex, "Error processing order");
                 TempData["ErrorMessage"] = "Er is een fout opgetreden bij het verwerken van de bestelling.";
 
@@ -558,6 +562,10 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                 var viewModel = HttpContext.Session.GetObjectFromJson<OrderEditViewModel>("CurrentOrder");
                 return View(nameof(OrderConfirm), viewModel);
             }
+        }
+        public IActionResult Order()
+        {
+            return View();
         }
     }
 }
