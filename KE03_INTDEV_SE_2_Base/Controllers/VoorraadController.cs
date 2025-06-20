@@ -354,13 +354,24 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
             {
                 return RedirectToAction(nameof(Ordercreate));
             }
+
+            // Filter out items with quantity 0
+            viewModel.AvailableItems = viewModel.AvailableItems.Where(i => i.Quantity > 0).ToList();
+
+            // If no items with quantity > 0, redirect back
+            if (!viewModel.AvailableItems.Any())
+            {
+                TempData["ErrorMessage"] = "Geen items geselecteerd voor bestelling.";
+                return RedirectToAction(nameof(Ordercreate));
+            }
+
             return View(viewModel);
         }
 
         [HttpPost]
         public IActionResult OrderConfirm(string orderType, List<OrderItemViewModel> Items)
         {
-            if (Items == null || !Items.Any())
+            if (Items == null || !Items.Any(i => i.Quantity > 0))
             {
                 TempData["ErrorMessage"] = "Geen items geselecteerd voor bestelling.";
                 return RedirectToAction(nameof(Ordercreate));
@@ -379,6 +390,8 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                     }
                 }
 
+                // Filter out items with quantity 0
+                order.AvailableItems = order.AvailableItems.Where(i => i.Quantity > 0).ToList();
                 HttpContext.Session.SetObjectAsJson("OrderItems", order);
             }
             else

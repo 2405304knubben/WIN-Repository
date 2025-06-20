@@ -68,7 +68,7 @@
                         @{
                             decimal totalPrice = 0;
                         }
-                        @foreach (var item in Model.AvailableItems)
+                        @foreach (var item in Model.AvailableItems.Where(i => i.Quantity > 0))
                         {
                             var itemTotal = item.Price * item.Quantity;
                             totalPrice += itemTotal;
@@ -89,7 +89,7 @@
                 </table>
             </div>            <div class="mt-4">
                 <form id="orderForm" method="post" action="@Url.Action("ProcessOrder", "Voorraad")">
-                    @foreach (var item in Model.AvailableItems)
+                    @foreach (var item in Model.AvailableItems.Where(i => i.Quantity > 0))
                     {
                         <input type="hidden" name="orderItems[@item.Id].Id" value="@item.Id" />
                         <input type="hidden" name="orderItems[@item.Id].Quantity" value="@item.Quantity" />
