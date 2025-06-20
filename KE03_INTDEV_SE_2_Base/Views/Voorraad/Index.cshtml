@@ -139,6 +139,9 @@
                             class="fa-solid fa-trash"></i></a>
                     <a asp-controller="Voorraad" asp-action="Create" asp-route-id="@item.Id" asp-route-type="part" class="btn btn-sm btn-success">
                         <i class="fa-solid fa-truck"></i></a>
+                    <button type="button" class="btn btn-sm btn-primary" onclick="openImageUpload(@item.Id, 'product')">
+                        <i class="fa-solid fa-camera"></i>
+                    </button>
                 </div>
             </div>
         }
