@@ -445,7 +445,8 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
-            {                // Get the Admin customer or create one if it doesn't exist
+            {
+                // Get the Admin customer or create one if it doesn't exist
                 var customer = await _context.Customers
                     .FirstOrDefaultAsync(c => c.Name.ToLower() == "admin");
 
@@ -479,6 +480,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                     var item = kvp.Value;
                     if (orderType.ToLower() == "normaal")
                     {
+                        // Normale bestelling: update product voorraad
                         var product = await _context.Products.FindAsync(item.Id);
                         if (product != null)
                         {
@@ -495,55 +497,30 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                             _context.OrderProducts.Add(orderProduct);
                         }
                     }
-                    else // Parts (bulk)
+                    else // Bulk bestelling voor onderdelen
                     {
-                        var part = await _context.Parts
-                            .Include(p => p.Products)
-                            .FirstOrDefaultAsync(p => p.Id == item.Id);
-
+                        // Vind het onderdeel en update alleen de voorraad
+                        var part = await _context.Parts.FindAsync(item.Id);
                         if (part != null)
                         {
                             // Verhoog de voorraad met de bestelde hoeveelheid
                             part.Stock += item.Quantity;
                             _logger.LogInformation($"Onderdeel {part.Name} voorraad verhoogd met {item.Quantity}. Nieuwe voorraad: {part.Stock}");
 
-                            // Zoek een bestaand product voor dit onderdeel
-                            var existingProduct = part.Products?.FirstOrDefault();
-
-                            // Als er geen bestaand product is, maak een nieuwe aan
-                            if (existingProduct == null)
-                            {
-                                var newProduct = new Product
-                                {
-                                    Name = $"{part.Name} (Onderdeel)",
-                                    Price = part.Price,
-                                    Stock = 0  // Voorraad wordt bijgehouden in het onderdeel
-                                };
-
-                                // Voeg het nieuwe product toe aan de database
-                                _context.Products.Add(newProduct);
-                                await _context.SaveChangesAsync();
-
-                                // Voeg het nieuwe product toe aan de parts-products relatie
-                                _context.Entry(part)
-                                    .Collection(p => p.Products)
-                                    .Load();
-                                part.Products?.Add(newProduct);
-
-                                existingProduct = newProduct;
-                            }
-
+                            // Registreer de bestelling met een verwijzing naar het onderdeel
                             var orderProduct = new OrderProduct
                             {
                                 OrdersId = order.Id,
-                                ProductsId = existingProduct.Id,
+                                ProductsId = item.Id,  // Gebruik part.Id als ProductsId
                                 Aantal = item.Quantity
                             };
                             _context.OrderProducts.Add(orderProduct);
                         }
                     }
                 }
-                await _context.SaveChangesAsync(); await transaction.CommitAsync();
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
 
                 // Clear all order-related session data
                 HttpContext.Session.Remove("CurrentOrder");
