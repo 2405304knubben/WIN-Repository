@@ -33,9 +33,26 @@
                       </li>  
                       <li class="nav-item">  
                           <a class="nav-link btn btn-black text-success" asp-area="" asp-controller="Orders" asp-action="Index">Bestellingen</a>  
-                      </li>  
-                      <li class="nav-item">  
+                      </li>                      <li class="nav-item">  
                           <a class="nav-link btn btn-black text-success" asp-area="" asp-controller="Voorraad" asp-action="Order">Bijbestellen</a>  
+
+                      </li>                  </ul>  
+                  @{
+                      var controller = ViewContext.RouteData.Values["Controller"]?.ToString()?.ToLower();
+                      var showSearch = controller == "voorraad" || controller == "product";
+                  }
+                  @if (showSearch)
+                  {                      <form class="d-flex" asp-controller="Home" asp-action="Search" method="post" id="searchForm">  
+                          <div class="position-relative">
+                              <input class="form-control me-2" type="search" name="search" id="searchInput" placeholder="Zoeken" aria-label="Search" autocomplete="off">  
+                              <div id="searchSuggestions" class="position-absolute w-100 d-none" style="z-index: 1000; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                              </div>
+                          </div>
+                          <button class="btn btn-outline-success" type="submit">
+                              <i class="fa-solid fa-magnifying-glass"></i>
+                          </button>  
+                      </form>  
+
                       </li>  
                   </ul>  
                   @if (ViewContext.RouteData.Values["controller"].ToString() == "Voorraad")
@@ -43,20 +60,20 @@
                     <form class="d-flex" asp-controller="Home" asp-action="Search" method="post">  
                         <input class="form-control me-2" type="search" name="search" placeholder="Zoeken" aria-label="Search">  
                         <button class="btn btn-outline-success" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>  
-                    </form>  
+                  
                   }
                   <ul class="navbar-nav flex-grow-1 justify-content-end">  
                       <li class="nav-item dropdown">  
                           <a class="nav-link dropdown-toggle btn btn-black text-success" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">  
-                              <i class="fa-solid fa-user"></i> @User.Identity.Name  
+                              <i class="fa-solid fa-user"></i> @(User.Identity?.Name ?? "User")  
                           </a>  
                           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">  
                               <li>  
                                   <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">  
                                         @Html.AntiForgeryToken()  
-                                        <a href="javascript:document.getElementById('logoutForm').submit()" class="dropdown-item text-danger d-flex align-items-center">  
+                                        <button type="submit" class="dropdown-item text-danger d-flex align-items-center" style="background:none; border:none; padding:0;">
                                             <i class="fa-solid fa-right-from-bracket me-2"></i> Uitloggen  
-                                        </a>  
+                                        </button>  
                                   </form>
                               </li>  
                           </ul>  

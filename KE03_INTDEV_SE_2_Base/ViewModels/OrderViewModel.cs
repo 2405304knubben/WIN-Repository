@@ -20,5 +20,6 @@ namespace KE03_INTDEV_SE_2_Base.ViewModels
         public int Amount { get; set; }
         public decimal Price { get; set; }
         public decimal TotalPrice => Amount * Price;
+        public string Type { get; set; } = "Product"; // Nieuw veld om onderscheid te maken tussen products en parts
     }
 }
