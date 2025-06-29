@@ -23,10 +23,12 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         }
 
         public async Task<IActionResult> Index()
-        {            var allOrders = await _context.Orders
+        {
+            var allOrders = await _context.Orders
                 .Include(o => o.Customer)
                 .Include(o => o.OrderProducts)
                     .ThenInclude(op => op.Product)
+                        .ThenInclude(p => p.Parts)
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();
             
@@ -35,11 +37,16 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                 OrderDataForCustomer = allOrders.Select(order => new OrderDetailViewModel
                 {
                     Order = order,
-                    ProductDetails = order.OrderProducts.Select(op => new ProductDetailViewModel
+                    ProductDetails = order.OrderProducts.Select(op =>
                     {
-                        ProductName = op.Product.Name,
-                        Amount = op.Aantal,
-                        Price = op.Product.Price
+                        var isPart = op.Product.Parts != null && op.Product.Parts.Any();
+                        return new ProductDetailViewModel
+                        {
+                            ProductName = op.Product.Name + (isPart ? " (Onderdeel)" : ""),
+                            Amount = op.Aantal,
+                            Price = op.Product.Price,
+                            Type = isPart ? "Onderdeel" : "Product"
+                        };
                     }).ToList()
                 }).ToList()
             };

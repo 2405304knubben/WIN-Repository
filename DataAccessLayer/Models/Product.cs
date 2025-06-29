@@ -6,21 +6,21 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace DataAccessLayer.Models
-{
-    public class Product
+{    public class Product
     {        
         public int Id { get; set; }
 
-        [Required]
-        public string Name { get; set; }
+        public required string Name { get; set; }
 
-        public string Description { get; set; }
+        public string Description { get; set; } = string.Empty;
 
         [Required]
         [Range(0, double.MaxValue, ErrorMessage = "Prijs moet groter zijn dan 0")]
         public decimal Price { get; set; }
 
         public int Stock { get; set; }
+
+        public byte[]? Image { get; set; }
 
         public ICollection<OrderProduct> OrderProducts { get; set; } = new List<OrderProduct>();
 
