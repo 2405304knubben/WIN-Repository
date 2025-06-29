@@ -37,7 +37,6 @@
         </thead>
         <tbody>
     @foreach (var item in Model) {
-        @if (item.Name.ToLower() != "admin") {
             <tr>
                 <td>
                     @Html.DisplayFor(modelItem => item.Name)
@@ -54,7 +53,6 @@
                     <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i></a>
                 </td>
             </tr>
-        }
     }
         </tbody>
     </table>
