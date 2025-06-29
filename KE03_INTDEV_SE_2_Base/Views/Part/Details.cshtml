@@ -1,4 +1,19 @@
-﻿@model DataAccessLayer.Models.Part
+﻿@*
+    PART DETAILS VIEW - ONDERDEEL INFORMATIE
+    ========================================
+    
+    Read-only weergave van onderdeel specificaties voor productie planning
+    en inventory management. Onderdelen zijn kritieke componenten voor
+    product assemblage in het MatrixInc systeem.
+    
+    BUSINESS CONTEXT:
+    - Parts zijn bouwstenen voor eindproducten
+    - Voorraadniveaus bepalen production capacity
+    - Prijsinformatie voor cost calculations
+    - Technical specifications voor assemblage
+*@
+
+@model DataAccessLayer.Models.Part
 
 @{
     ViewData["Title"] = "Part Informatie";

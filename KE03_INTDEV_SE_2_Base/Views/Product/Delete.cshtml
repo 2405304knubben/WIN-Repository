@@ -1,40 +1,100 @@
-﻿@model DataAccessLayer.Models.Product
+﻿@*
+    PRODUCT DELETE CONFIRMATION VIEW
+    ================================
+    
+    Implementeert het "Delete" patroon van CRUD operaties met een veilige
+    two-step confirmation process. Toont productdetails voordat definitieve
+    verwijdering plaatsvindt.
+    
+    ARCHITECTUUR:
+    - Strongly-typed view met Product model
+    - GET request toont confirmation page
+    - POST request voert daadwerkelijke delete uit
+    - Hidden field voor secure ID transmission
+    
+    SECURITY PATTERNS:
+    - Confirmation step voorkomt accidentele deletes
+    - Hidden ID field beschermt tegen tampering
+    - POST-based delete voor veilige operations
+    
+    EDUCATIEVE ASPECTEN:
+    - Demonstratie van destructive operation patterns
+    - User experience best practices voor confirmations
+    - HTTP verb usage (GET voor show, POST voor delete)
+    - Form-based secure data transmission
+    
+    UI/UX PATTERNS:
+    - Clear warning message voor gebruikersbewustzijn
+    - Read-only data display voor context
+    - Prominent danger styling voor delete button
+    - Escape route via cancel/back button
+*@
+
+@model DataAccessLayer.Models.Product
 
 @{
     ViewData["Title"] = "Product verwijderen";
 }
 
+@* MATRIX BRANDING: Consistente achtergrondvideo *@
 <video autoplay loop muted playsinline id="bg-video">
     <source src="/Videos/matrix.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 
+@* HOOFDTITEL: Duidelijke waarschuwing voor destructive operation *@
 <h1 class="text-white">Product verwijderen</h1>
 
+@* 
+CONFIRMATION INTERFACE
+=====================
+
+Warning-based design voor destructive operations:
+- Duidelijke vraag voor user confirmation
+- Complete productgegevens voor context
+- Visual hierarchy met headers en dividers
+*@
 <div class="card matrix-card shadow mb-4">
+    @* WAARSCHUWING: Prominente confirmation vraag *@
     <h3>Weet u zeker dat u dit product wilt verwijderen?</h3>
     <div>
         <h4>Product</h4>
         <hr />
+        @* 
+        PRODUCTGEGEVENS WEERGAVE
+        =======================
+        
+        Definition list voor context tijdens delete confirmation:
+        - Gebruiker kan verificeren dat correct product wordt verwijderd
+        - Alle relevante informatie zichtbaar voor informed decision
+        - Consistent met Details view voor familiarity
+        *@
         <dl class="row">
+            @* PRODUCTNAAM: Primaire identificatie voor verification *@
             <dt class="col-sm-2">
                 Naam
             </dt>
             <dd class="col-sm-10">
                 @Html.DisplayFor(model => model.Name)
             </dd>
+            
+            @* PRODUCTBESCHRIJVING: Aanvullende context *@
             <dt class="col-sm-2">
                 Beschrijving
             </dt>
             <dd class="col-sm-10">
                 @Html.DisplayFor(model => model.Description)
             </dd>
+            
+            @* PRIJSINFORMATIE: Waarde impact van delete *@
            <dt class="col-sm-2">
                 Prijs
             </dt>
             <dd class="col-sm-10">
                 @Html.DisplayFor(model => model.Price)
             </dd>
+            
+            @* VOORRAADNIVEAU: Inventory impact awareness *@
             <dt class="col-sm-2">
                 Voorraad
             </dt>
@@ -43,12 +103,31 @@
             </dd>
         </dl>
     </div>
-</div>
+}
 
+@* 
+DELETE CONFIRMATION ACTIONS
+===========================
+
+Two-step delete process voor veilige destructive operations:
+1. GET request toont deze confirmation page
+2. POST request (via form submit) voert delete uit
+*@
 <div>
+    @* 
+    DELETE FORM:
+    - asp-action="Delete" routes naar POST Delete action
+    - Hidden ID field voor secure parameter transmission
+    - Submit button triggers daadwerkelijke delete
+    *@
     <form asp-action="Delete">
+        @* SECURITY: Hidden field voorkomt URL manipulation *@
         <input type="hidden" asp-for="Id" />
+        
+        @* DESTRUCTIVE ACTION: btn-danger voor duidelijke visual warning *@
         <input type="submit" value="Verwijderen" class="btn btn-danger" /> |
+        
+        @* ESCAPE ROUTE: Altijd een veilige uitweg bieden *@
         <a asp-action="Index" class="btn btn-secondary">Terug naar Voorraad</a>
     </form>
 </div>

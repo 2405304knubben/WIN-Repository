@@ -1,18 +1,36 @@
-﻿@model KE03_INTDEV_SE_2_Base.ViewModels.DashboardViewModel
+﻿@*
+    Home/Index.cshtml - Dashboard homepage van Matrix Inc. Admin systeem
+    
+    Functionaliteit:
+    - Toont key performance indicators (KPI's) voor bedrijfsvoering
+    - Interactieve grafieken voor bestellingen en omzet trends
+    - Datum filtering voor historische data analyse
+    - Responsive design met Bootstrap grid system
+    - Matrix-themed video achtergrond voor branding
+    
+    Model: DashboardViewModel met geaggregeerde statistieken
+    Dependencies: Chart.js voor data visualisatie, custom CSS voor styling
+*@
+
+@model KE03_INTDEV_SE_2_Base.ViewModels.DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
 }
 
+@* Custom CSS voor dashboard styling en animaties *@
 <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
 
+@* Matrix-themed video achtergrond voor branding effect *@
 <video autoplay loop muted playsinline id="bg-video">
     <source src="/Videos/matrix.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 
 <div class="dashboard">
-    <!-- Cards -->
+    @* ==================== KPI CARDS ==================== *@
+    @* Drielaags grid met belangrijkste bedrijfsstatistieken *@
     <div class="row">
+        @* Totale bestellingen card - navigeert naar bestellingen overzicht *@
         <div class="col-md-4">
             <div class="card stats-card fade-in" style="cursor: pointer" onclick="window.location.href = '@Url.Action("Index", "Bestellingen")'">
                 <div class="card-body">
@@ -21,6 +39,8 @@
                 </div>
             </div>
         </div>
+        
+        @* Omzet card - navigeert naar product/voorraad overzicht *@
         <div class="col-md-4">
             <div class="card stats-card fade-in" style="cursor: pointer" onclick="window.location.href = '@Url.Action("Index", "Product")'">
                 <div class="card-body">
@@ -29,6 +49,8 @@
                 </div>
             </div>
         </div>
+        
+        @* Klanten card - navigeert naar klanten overzicht *@
         <div class="col-md-4">
             <div class="card stats-card fade-in" style="cursor: pointer" onclick="window.location.href = '@Url.Action("Index", "Customers")'">
                 <div class="card-body">
@@ -39,20 +61,28 @@
         </div>
     </div>
 
-    <!-- Date Filter -->
+    @* ==================== DATUM FILTER SECTIE ==================== *@
+    @* Interactieve datum selectie voor historische data analyse *@
     <div class="date-filter my-4">
         <div class="d-flex align-items-end gap-3 fade-in2 ">
+            @* Start datum picker *@
             <div>
                 <label for="startDate" class="form-label">Start Datum</label>
                 <input type="date" id="startDate" class="form-control" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
             </div>
+            
+            @* Eind datum picker *@
             <div>
                 <label for="endDate" class="form-label">Eind Datum</label>
                 <input type="date" id="endDate" class="form-control" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
             </div>
+            
+            @* Update knop voor gefilterde data *@
             <div>
                 <button id="updateStats" class="btn btn-success">Update</button>
             </div>
+            
+            @* Voorgedefinieerde periode knoppen *@
             <div class="ms-auto">
                 <div class="btn-group" role="group">
                     <button type="button" class="btn btn-secondary" data-period="7">Week</button>
@@ -63,21 +93,26 @@
         </div>
     </div>
 
-    <!-- Charts -->
-    
+    @* ==================== GRAFIEK SECTIE ==================== *@
+    @* Twee-kolom layout voor bestellingen en omzet trends *@
     <div class="row mt-4">
+        @* Dagelijkse bestellingen grafiek *@
         <div class="col-md-6">
             <div class="card slide-in-left border border-success">
                 <div class="card-body">
                     <h5 class="card-title">Dagelijkse Bestellingen</h5>
+                    @* Canvas element voor Chart.js rendering *@
                     <canvas id="ordersChart"></canvas>
                 </div>
             </div>
         </div>
+        
+        @* Dagelijkse omzet grafiek *@
         <div class="col-md-6">
             <div class="card slide-in-right border border-success">
                 <div class="card-body">
                     <h5 class="card-title">Dagelijkse Omzet</h5>
+                    @* Canvas element voor Chart.js rendering *@
                     <canvas id="revenueChart"></canvas>
                 </div>
             </div>
@@ -86,16 +121,21 @@
 </div>
 
 @section Scripts {
+    @* Chart.js library voor data visualisatie *@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // Globale variabelen voor chart instances
         let ordersChart;
         let revenueChart;
 
-        // Parse the model data for charts
+        // Parse model data naar JavaScript formaat voor grafieken
+        // Razor syntax om C# data te serialiseren naar JSON
         const orderData = @Html.Raw(Json.Serialize(Model.DailyOrderCounts.Select(x => new { date = x.Date.ToString("yyyy-MM-dd"), count = x.Count })));
         const revenueData = @Html.Raw(Json.Serialize(Model.DailyRevenue.Select(x => new { date = x.Date.ToString("yyyy-MM-dd"), revenue = x.Revenue })));
 
+        // Functie om beide grafieken te initialiseren
         function initializeCharts() {
+            // Verkrijg canvas contexten voor Chart.js
             const orderCtx = document.getElementById('ordersChart').getContext('2d');
             const revenueCtx = document.getElementById('revenueChart').getContext('2d');
 

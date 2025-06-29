@@ -1,39 +1,85 @@
-﻿@model DataAccessLayer.Models.Product
+﻿@*
+    PRODUCT BEWERKEN VIEW
+    ====================
+    
+    Deze view biedt een uitgebreide interface voor het bewerken van bestaande producten 
+    in het MatrixInc voorraadsysteem. Het combineert productgegevens met beeldenbeheer.
+    
+    ARCHITECTUUR:
+    - Strongly-typed view met Product model
+    - Gescheiden forms voor productdata en beeldupload
+    - Async/await JavaScript voor parallelle verwerking
+    - Real-time beeldpreview met FileReader API
+    
+    EDUCATIEVE ASPECTEN:
+    - Demonstratie van complexe formulierverwerking
+    - Moderne asynchrone JavaScript technieken
+    - File upload met voorbeeldfunctionaliteit
+    - Responsive design met Bootstrap grid
+    
+    SECURITY:
+    - Hidden field voor ID beveiliging
+    - Server-side validatie via Model State
+    - File type restrictie (accept="image/*")
+    - Fetch API met error handling
+*@
+
+@model DataAccessLayer.Models.Product
 
 @{
     ViewData["Title"] = "Product aanpassen";
 }
 
+@* MATRIX BRANDING: Achtergrondvideo voor consistente huisstijl *@
 <video autoplay loop muted playsinline id="bg-video">
     <source src="/Videos/matrix.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 
+@* HOOFDTITEL: Duidelijke pagina-identificatie *@
 <h1 class="text-white">Productinformatie aanpassen</h1>
 
+@* HOOFD FORMULIER CONTAINER: Matrix-gebrande kaart voor consistent design *@
 <div class="card matrix-card shadow mb-4">
     <h4>Product</h4>
     <hr />
     <div class="row">
+        @* LINKS: FORMULIEREN SECTIE - Gescheiden forms voor optimale verwerking *@
         <div class="col-md-8">
+            @* 
+            PRODUCT DATA FORMULIER
+            Primaire form voor basisproductinformatie
+            Gebruikt asp-action voor automatische routing naar Edit action
+            *@
             <form asp-action="Edit" id="productForm">
+                @* VALIDATIE: Model-level validatie berichten *@
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                
+                @* SECURITY: Hidden field voor product ID beveiliging *@
                 <input type="hidden" asp-for="Id" />
+                
+                @* PRODUCTNAAM: Tag Helpers voor automatische validatie binding *@
                 <div class="form-group">
                     <label asp-for="Name" class="control-label">Naam</label>
                     <input asp-for="Name" class="form-control" />
                     <span asp-validation-for="Name" class="text-danger"></span>
                 </div>
+                
+                @* PRODUCTBESCHRIJVING: Uitgebreide tekst input *@
                 <div class="form-group">
                     <label asp-for="Description" class="control-label">Beschrijving</label>
                     <input asp-for="Description" class="form-control" />
                     <span asp-validation-for="Description" class="text-danger"></span>
                 </div>
+                
+                @* PRIJSINFORMATIE: Numerieke validatie via model attributes *@
                 <div class="form-group">
                     <label asp-for="Price" class="control-label">Prijs</label>
                     <input asp-for="Price" class="form-control" />
                     <span asp-validation-for="Price" class="text-danger"></span>
                 </div>
+                
+                @* VOORRAADNIVEAU: Critical business data voor inventory management *@
                 <div class="form-group">
                     <label asp-for="Stock" class="control-label">Voorraad</label>
                     <input asp-for="Stock" class="form-control" />
@@ -41,39 +87,88 @@
                 </div>
             </form>
 
-            <!-- Separate form for image upload -->
+            @* 
+            AFBEELDING UPLOAD FORMULIER
+            Gescheiden form voor file uploads met enctype="multipart/form-data"
+            Vereist voor binaire data zoals afbeeldingen
+            *@
             <form id="imageForm" enctype="multipart/form-data" class="mb-3">
                 <div class="form-group">
                     <label for="imageFile" class="control-label">Afbeelding</label>
+                    @* 
+                    FILE INPUT: 
+                    - accept="image/*" beperkt tot afbeeldingsbestanden
+                    - onchange triggert preview functionaliteit
+                    *@
                     <input type="file" id="imageFile" name="imageFile" class="form-control" accept="image/*" onchange="previewImage(event)" />
                 </div>
             </form>
         </div>
+        
+        @* RECHTS: AFBEELDING PREVIEW SECTIE *@
         <div class="col-md-4">
+            @* 
+            PREVIEW CONTAINER: 
+            Conditional rendering op basis van bestaande afbeelding
+            Inline style voor dynamische visibility
+            *@
             <div id="imagePreview" class="image-preview-container" style="@(Model.Image != null ? "" : "display: none;")">
                 <h5 class="mb-3">Afbeelding Voorbeeld</h5>
+                @* 
+                AFBEELDING WEERGAVE:
+                - Base64 encoding voor byte array display
+                - Conditional src attribute voor bestaande afbeeldingen
+                - Alt attribute voor accessibility
+                *@
                 <img src="@(Model.Image != null ? $"data:image;base64,{Convert.ToBase64String(Model.Image)}" : "")" 
                      alt="Preview" class="img-preview" />
             </div>
         </div>
     </div>
-</div>
+}
 
+@* NAVIGATIE KNOPPEN: Gebruiksvriendelijke acties *@
 <div>
+    @* PRIMAIRE ACTIE: Custom JavaScript submit voor geavanceerde verwerking *@
     <input type="button" onclick="submitProduct()" value="Opslaan" class="btn btn-primary" /> |
+    @* SECUNDAIRE ACTIE: asp-action Tag Helper voor automatische routing *@
     <a class="btn btn-secondary" asp-action="Index">Terug naar productenoverzicht</a>
 </div>
 
 @section Scripts {
     <script>
+        /*
+        ASYNCHRONE PRODUCT UPDATE FUNCTIE
+        =================================
+        
+        Geavanceerde JavaScript functie die demonstreert:
+        - Modern async/await syntax voor asynchrone operaties
+        - Fetch API voor AJAX requests zonder jQuery
+        - Foutafhandeling met try-catch blocks
+        - Sequentiële verwerking van product data en afbeelding upload
+        
+        WORKFLOW:
+        1. Verzamelen van productformulier data
+        2. Controleren op nieuwe afbeelding
+        3. Versturen productdata via POST request
+        4. Bij succes: uploaden nieuwe afbeelding (indien aanwezig)
+        5. Doorverwijzen naar overzicht of tonen foutmelding
+        
+        EDUCATIEVE WAARDE:
+        - Modern JavaScript ES6+ patterns
+        - Promise-based programming
+        - RESTful API interaction
+        - User experience optimization
+        */
         async function submitProduct() {
             const productForm = document.getElementById('productForm');
             const imageFile = document.getElementById('imageFile').files[0];
             
-            // First submit the product data
+            // FormData object voor automatische encoding van form fields
             const formData = new FormData(productForm);
             
             try {
+                // Eerste stap: product data bijwerken
                 const response = await fetch(productForm.action, {
                     method: 'POST',
                     body: formData
@@ -81,8 +176,9 @@
 
                 if (response.ok) {
                     const result = await response.json();
+                    // Conditionele afbeelding upload indien product update succesvol
                     if (result.success && imageFile) {
-                        // If product was updated successfully and there's a new image, upload it
+                        // Tweede stap: nieuwe afbeelding uploaden
                         const imageFormData = new FormData();
                         imageFormData.append('id', '@Model.Id');
                         imageFormData.append('type', 'product');
@@ -94,34 +190,58 @@
                         });
 
                         if (imageResponse.ok) {
+                            // Succesvol: doorverwijzen naar overzicht
                             window.location.href = '/Product';
                         } else {
+                            // Gedeeltelijk succes: product bijgewerkt, afbeelding gefaald
                             alert('Product bijgewerkt, maar er is een fout opgetreden bij het uploaden van de afbeelding.');
                             window.location.href = '/Product';
                         }
                     } else {
+                        // Alleen product bijgewerkt (geen nieuwe afbeelding)
                         window.location.href = '/Product';
                     }
                 } else {
+                    // Server error bij product update
                     alert('Er is een fout opgetreden bij het bijwerken van het product.');
                 }
             } catch (error) {
+                // Network of andere JavaScript errors
                 console.error('Error:', error);
                 alert('Er is een fout opgetreden bij het bijwerken van het product.');
             }
         }
 
+        /*
+        AFBEELDING PREVIEW FUNCTIE
+        ==========================
+        
+        Implementeert real-time beeldvoorvertoning met:
+        - FileReader API voor lokale bestandsverwerking
+        - Event-driven programming
+        - DOM manipulatie voor UI updates
+        - Gebruiksvriendelijke feedback
+        
+        TECHNISCHE DETAILS:
+        - FileReader.readAsDataURL() voor Base64 encoding
+        - Event handler pattern voor file input changes
+        - Conditional UI rendering
+        */
         function previewImage(event) {
             const preview = document.getElementById('imagePreview');
             const previewImg = preview.querySelector('img');
             const file = event.target.files[0];
             
             if (file) {
+                // FileReader voor client-side bestandsverwerking
                 const reader = new FileReader();
                 reader.onload = function(e) {
+                    // Data URL toewijzen aan img src
                     previewImg.src = e.target.result;
+                    // Preview container zichtbaar maken
                     preview.style.display = 'block';
                 }
+                // Bestand lezen als Base64 data URL
                 reader.readAsDataURL(file);
             }
         }
@@ -129,17 +249,41 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
 
+@* 
+CUSTOM STYLING VOOR PRODUCT EDIT VIEW
+====================================
+
+Deze CSS regels demonstreren moderne web design principles:
+- Responsive design met flexbox
+- Consistent spacing via CSS custom properties
+- Visual hierarchy met shadows en borders
+- Gebruiksvriendelijke file upload styling
+
+EDUCATIEVE ASPECTEN:
+- CSS Grid/Flexbox voor layout
+- Object-fit voor responsive images
+- Box-shadow voor depth perception
+- Dashed borders voor upload areas
+*@
 <style>
+    /* FORMULIER SPACING: Consistente verticale ruimte tussen form elements */
     .form-group {
         margin-bottom: 1rem;
     }
 
+    /* MATRIX KAART STYLING: Consistent branding en professionele uitstraling */
     .matrix-card {
         padding: 20px;
         background-color: white;
         border-radius: 12px;
     }
 
+    /* 
+    AFBEELDING PREVIEW CONTAINER: 
+    - Flexbox voor centrering van content
+    - Dashed border voor upload area indicatie
+    - Minimum height voor consistent layout
+    */
     .image-preview-container {
         background-color: #f8f9fa;
         border-radius: 12px;
@@ -153,6 +297,12 @@
         border: 2px dashed #dee2e6;
     }
 
+    /* 
+    AFBEELDING PREVIEW STYLING:
+    - object-fit: contain voor proportionele scaling
+    - Box-shadow voor visuele diepte
+    - Responsive sizing met max-width/height
+    */
     .img-preview {
         max-width: 100%;
         max-height: 300px;

@@ -1,20 +1,111 @@
-﻿@model KE03_INTDEV_SE_2_Base.ViewModels.OrderEditViewModel
+﻿@*
+    ORDER DELETE CONFIRMATION VIEW
+    ==============================
+    
+    Veilige verwijderings-interface voor bestellingen met comprehensive
+    order review. Implementeert destructive operation best practices
+    met duidelijke waarschuwingen en complete data visibility.
+    
+    ARCHITECTUUR:
+    - Strongly-typed OrderEditViewModel voor complete order data
+    - Two-step delete confirmation pattern
+    - Read-only order review table
+    - Prominent warning messaging
+    
+    BUSINESS CONTEXT:
+    - Order deletion heeft inventory impact
+    - Financial implications van cancelled orders
+    - Audit trail considerations
+    - Customer relationship management
+    
+    EDUCATIEVE ASPECTEN:
+    - Destructive operation UI patterns
+    - Data visualization voor confirmation
+    - Bootstrap alert components
+    - Font Awesome iconography
+    - Cultural currency formatting
+    
+    UI/UX PATTERNS:
+    - Danger-themed color scheme
+    - Comprehensive data display voor informed decisions
+    - Clear visual hierarchy met warnings
+    - Consistent navigation patterns
+    - Icon-enhanced action buttons
+    
+    SECURITY:
+    - Hidden ID field voor secure deletion
+    - Confirmation step voorkomt accidents
+    - Complete data visibility voor verification
+*@
 
+@model KE03_INTDEV_SE_2_Base.ViewModels.OrderEditViewModel
+
+@* MATRIX BRANDING: Consistente achtergrondvideo voor alle views *@
 <video autoplay loop muted playsinline id="bg-video">
     <source src="/Videos/matrix.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 
+@* 
+ORDER DELETE INTERFACE
+=====================
+
+Container-based layout voor professional delete confirmation:
+- Bootstrap container voor responsive behavior
+- Matrix-branded styling voor consistency
+- Card-based content organization met dark theme
+*@
 <div class="container py-4">
+    @* HOOFDTITEL: Centered white text voor visibility tegen video background *@
     <h2 class="text-center text-white matrix-header mb-5">Order verwijderen</h2>
+    
+    @* 
+    ORDER REVIEW CARD
+    ================
+    
+    Card layout met comprehensive order information:
+    - Header met order metadata (datum)
+    - Body bevat warning + complete order details
+    - Dark theme voor Matrix consistency
+    *@
     <div class="card matrix-card shadow mb-4">
+        @* 
+        CARD HEADER: Order identification
+        - Font Awesome calendar icon voor visual context
+        - Dutch date formatting voor local user experience
+        - Flexbox layout voor proper alignment
+        *@
         <div class="card-header bg-dark text-light d-flex justify-content-between align-items-center">
             <span><i class="fa-solid fa-calendar"></i> @Model.OrderDate.ToString("dd-MM-yyyy")</span>
         </div>
+        
+        @* 
+        CARD BODY: Main delete confirmation interface
+        Dark theme matching Matrix branding
+        *@
         <div class="card-body bg-dark text-light">
+            @* 
+            WARNING ALERT
+            ============
+            
+            Prominent danger alert voor destructive operation awareness:
+            - Bootstrap alert-danger styling
+            - Font Awesome warning icon
+            - Clear confirmation question
+            *@
             <div class="alert alert-danger">
                 <i class="fa-solid fa-exclamation-triangle"></i> Weet u zeker dat u deze order wilt verwijderen?
             </div>
+            @* 
+            ORDER PRODUCTS REVIEW TABLE
+            ==========================
+            
+            Comprehensive order details voor informed deletion decision:
+            - Dark table theme voor consistency met Matrix branding
+            - Striping voor enhanced readability
+            - Complete product information visibility
+            - Financial impact awareness
+            *@
             <table class="table table-dark table-striped">
                 <thead>
                     <tr>
@@ -24,16 +115,46 @@
                         <th>Totaal</th>
                     </tr>
                 </thead>
+                
+                @* 
+                ORDER ITEMS DISPLAY
+                ==================
+                
+                Read-only order product information:
+                - Complete product details voor verification
+                - Cultural currency formatting (nl-NL)
+                - Line-by-line totals voor transparency
+                *@
                 <tbody>
                     @foreach (var product in Model.OrderProducts)
                     {
                         <tr>
+                            @* PRODUCT IDENTIFICATIE: Product name voor verification *@
                             <td>@product.ProductName</td>
+                            
+                            @* QUANTITY INFO: Aantal items in order *@
                             <td>@product.Quantity</td>
+                            
+                            @* 
+                            UNIT PRICE: 
+                            - ToString("C") voor currency formatting
+                            - Dutch culture (nl-NL) voor Euro symbol en formatting
+                            - System.Globalization.CultureInfo voor precise localization
+                            *@
                             <td>@product.Price.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"))</td>
+                            
+                            @* LINE TOTAL: Per-product total cost *@
                             <td>@product.TotalPrice.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"))</td>
                         </tr>
-                    }                </tbody>
+                    }
+                </tbody>
+                
+                @* 
+                TABLE FOOTER: Grand total calculation
+                - LINQ Sum aggregation voor total calculation
+                - Right-aligned total voor visual scanning
+                - Dutch currency formatting consistency
+                *@
                 <tfoot>
                     <tr>
                         <td colspan="3" class="text-end"><strong>Totaal:</strong></td>
@@ -42,12 +163,59 @@
                 </tfoot>
             </table>
 
+            @* 
+            DELETE CONFIRMATION FORM
+            ========================
+            
+            Secure deletion form met proper HTTP method handling:
+            - asp-action="Delete" routes naar POST Delete action
+            - Hidden ID field voor secure order identification
+            - Two-step confirmation process (view + form submit)
+            - Bootstrap spacing classes (mt-4) voor layout
+            *@
             <form asp-action="Delete" class="mt-4">
+                @* 
+                SECURITY: Hidden ID field
+                - asp-for="Id" binding voor secure parameter transmission
+                - Prevents URL manipulation attacks
+                - Ensures correct order identification
+                *@
                 <input type="hidden" asp-for="Id" />
+                
+                @* 
+                ACTION BUTTONS CONTAINER
+                =======================
+                
+                Flexbox layout voor responsive button arrangement:
+                - d-flex voor flexbox container
+                - gap-2 voor consistent spacing tussen buttons
+                - Responsive button sizing
+                *@
                 <div class="d-flex gap-2">
+                    @* 
+                    DESTRUCTIVE ACTION BUTTON
+                    ========================
+                    
+                    Primary delete button met danger styling:
+                    - btn-danger voor visual warning (red background)
+                    - Font Awesome trash icon voor intuitive recognition
+                    - Submit type triggers form submission
+                    - Clear labeling voor accessibility
+                    *@
                     <button type="submit" class="btn btn-danger">
                         <i class="fa-solid fa-trash"></i> Verwijderen
                     </button>
+                    
+                    @* 
+                    ESCAPE ROUTE NAVIGATION
+                    ======================
+                    
+                    Safe return option voor user workflow:
+                    - asp-action="Index" routes naar order overview
+                    - btn-secondary voor less prominent styling
+                    - Font Awesome arrow icon voor directional guidance
+                    - Anchor tag voor GET navigation (no form submission)
+                    *@
                     <a asp-action="Index" class="btn btn-secondary">
                         <i class="fa-solid fa-arrow-left"></i> Terug naar overzicht
                     </a>

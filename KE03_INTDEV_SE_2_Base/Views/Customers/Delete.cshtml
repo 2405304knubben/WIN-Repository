@@ -1,33 +1,100 @@
-﻿@model DataAccessLayer.Models.Customer
+﻿@*
+    CUSTOMER DELETE CONFIRMATION VIEW
+    =================================
+    
+    Veilige klant verwijdering interface met comprehensive customer review.
+    Implementeert destructive operation best practices specifiek voor
+    customer relationship management.
+    
+    ARCHITECTUUR:  
+    - Strongly-typed Customer model voor complete data access
+    - Two-step confirmation pattern voor veiligheid
+    - Read-only customer information display
+    - Form-based secure deletion
+    
+    BUSINESS CONTEXT:
+    - Customer deletion heeft CRM implications
+    - Potential impact op order history
+    - GDPR compliance considerations
+    - Data retention policy adherence
+    
+    EDUCATIEVE ASPECTEN:
+    - DisplayNameFor voor automatic label generation
+    - DisplayFor voor type-safe data rendering
+    - Destructive operation UI patterns
+    - Definition list semantic structure
+    - Form-based secure operations
+    
+    UI/UX PATTERNS:
+    - Clear confirmation question
+    - Complete customer data visibility
+    - Danger-themed delete button
+    - Safe escape route via cancel
+    - Consistent Matrix branding
+    
+    SECURITY & COMPLIANCE:
+    - Hidden ID field voor secure identification
+    - Two-step confirmation process
+    - Complete audit trail capability
+    - User verification requirements
+*@
+
+@model DataAccessLayer.Models.Customer
 
 @{
     ViewData["Title"] = "Klant verwijderen";
 }
 
+@* HOOFDTITEL: Duidelijke waarschuwing voor destructive operation *@
 <h1 class="text-white">Klant verwijderen</h1>
 
+@* MATRIX BRANDING: Consistente achtergrondvideo *@
 <video autoplay loop muted playsinline id="bg-video">
     <source src="/Videos/matrix.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 
+@* 
+CUSTOMER CONFIRMATION INTERFACE
+==============================
+
+Card-based layout voor structured information presentation:
+- Matrix-branded styling voor consistency
+- Clear warning message voor user awareness
+- Complete customer data voor verification
+*@
 <div class="card matrix-card shadow mb-4">
+    @* CONFIRMATION VRAAG: Prominent warning voor destructive action *@
     <h3>Weet u zeker dat u deze klant wilt verwijderen?</h3>
     <div>
         <hr />
+        @* 
+        CUSTOMER DATA REVIEW
+        ===================
+        
+        Definition list met automatic label generation:
+        - DisplayNameFor gebruikt model metadata voor labels
+        - DisplayFor voor type-safe data rendering
+        - Semantic HTML structure voor accessibility
+        *@
         <dl class="row">
+            @* CUSTOMER NAME: Primaire identificatie *@
             <dt class = "col-sm-2">
                 @Html.DisplayNameFor(model => model.Name)
             </dt>
             <dd class = "col-sm-10">
                 @Html.DisplayFor(model => model.Name)
             </dd>
+            
+            @* CUSTOMER ADDRESS: Contact information *@
             <dt class = "col-sm-2">
                 @Html.DisplayNameFor(model => model.Address)
             </dt>
             <dd class = "col-sm-10">
                 @Html.DisplayFor(model => model.Address)
             </dd>
+            
+            @* CUSTOMER STATUS: Active/inactive indication *@
             <dt class = "col-sm-2">
                 @Html.DisplayNameFor(model => model.Active)
             </dt>
@@ -36,12 +103,32 @@
             </dd>
         </dl>
     </div>
-</div>
+}
 
+@* 
+DELETE CONFIRMATION ACTIONS
+===========================
+
+Two-step delete process voor secure customer removal:
+- Form-based submission voor proper HTTP verb usage
+- Hidden ID field voor secure customer identification
+- Clear action buttons met appropriate styling
+*@
 <div>
+    @* 
+    DELETE FORM:
+    - asp-action="Delete" routes naar DELETE HTTP method
+    - Hidden ID field beschermt tegen URL manipulation
+    - Submit triggers final delete confirmation
+    *@
     <form asp-action="Delete">
+        @* SECURITY: Hidden field voor customer ID protection *@
         <input type="hidden" asp-for="Id" />
+        
+        @* DESTRUCTIVE ACTION: btn-danger styling voor visual warning *@
         <input type="submit" value="Verwijderen" class="btn btn-danger" /> |
+        
+        @* ESCAPE ROUTE: Safe return naar customer overview *@
         <a asp-action="Index" class="btn btn-secondary">Terug naar Klantenoverzicht</a>
     </form>
 </div>

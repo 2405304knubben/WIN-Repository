@@ -1,26 +1,107 @@
+@*
+    ORDER CREATE VIEW - GEAVANCEERDE BESTELLINGSINTERFACE
+    ====================================================
+    
+    Deze view implementeert een geavanceerde, interactieve bestellingsinterface
+    die zowel normale als bulk bestellingen ondersteunt. Het combineert server-side
+    data met client-side interactiviteit voor een optimale gebruikerservaring.
+    
+    ARCHITECTUUR OVERZICHT:
+    - Dynamic ViewData voor bestellingstype bepaling
+    - Strongly-typed OrderEditViewModel voor data binding
+    - JavaScript-driven dynamic table management
+    - Real-time totaal berekeningen en validatie
+    - Session-based state management voor order persistentie
+    
+    BUSINESS LOGIC:
+    - Normale bestellingen: minimaal 1 product
+    - Bulk bestellingen: minimaal 6 producten voor volume discount
+    - Real-time voorraad controle en availability feedback
+    - Automatic reorder notifications voor out-of-stock items
+    
+    EDUCATIEVE ASPECTEN:
+    - Geavanceerde client-server communicatie patterns
+    - Dynamic form generation met proper model binding
+    - Real-time UI updates zonder page refresh
+    - Complex state management in frontend
+    - Advanced JavaScript patterns (debouncing, event delegation)
+    
+    UI/UX INNOVATION:
+    - Contextual warnings en feedback
+    - Dynamic product addition zonder page reload
+    - Visual stock status indicators
+    - Responsive table design voor mobile compatibility
+    - Progressive form validation
+    
+    SECURITY FEATURES:
+    - CSRF token validation voor AJAX requests
+    - Server-side quantity validation
+    - Hidden field protection voor order integrity
+    - Input sanitization en validation
+*@
+
 @model KE03_INTDEV_SE_2_Base.ViewModels.OrderEditViewModel
     @{
         ViewData["Title"] = "Bestellingslijst";
+        // Dynamic order type determination voor contextual behavior
         var orderType = ViewBag.OrderType;
         var isNormaal = orderType == "normaal";
+        // Business rule: bulk orders require minimum 6 items
         var minItems = isNormaal ? 1 : 6;    }
 
+@* MATRIX BRANDING: Consistente achtergrondvideo voor alle views *@
 <video autoplay loop muted playsinline id="bg-video">
     <source src="/Videos/matrix.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 
+    @* 
+    HOOFD BESTELLING CONTAINER
+    =========================
+    
+    Centrale container voor alle bestellingsfunctionaliteit:
+    - Responsive design voor verschillende schermgroottes
+    - Consistent styling met application theming
+    - Logical content organization
+    *@
     <div class="order-container">
+        @* 
+        DYNAMIC TITEL GENERATIE
+        ======================
+        
+        Contextual title generation op basis van order type:
+        - Normale bestelling: standaard workflow
+        - Bulk bestelling: volume ordering met minimum requirements
+        - Inline conditionals voor user guidance
+        *@
         <h2 class="order-title">@(isNormaal ? "Normale Bestelling" : "Bulk Bestelling") @(isNormaal ? "" : $"(Minimaal {minItems} producten)")</h2>
         @{
+            // TempData voor cross-request data persistence
             TempData["OrderType"] = orderType;
         }
+        
+        @* 
+        PRODUCT SELECTIE INTERFACE
+        =========================
+        
+        Dynamic product selection met real-time feedback:
+        - Dropdown populated from ViewModel data
+        - Stock status integration in option display
+        - Accessibility-friendly option labeling
+        *@
         <div class="add-product-section">
             <div class="add-product-controls">
                 <select id="productSelect" class="form-select">
                     <option value="" selected disabled>Selecteer een @(isNormaal ? "product" : "onderdeel")</option>
                     @foreach (var item in Model.AvailableItems)
                     {
+                        @* 
+                        PRODUCT OPTION GENERATION:
+                        - Data attributes voor JavaScript access
+                        - Formatted price voor consistent display
+                        - Stock status integrated in option text
+                        - Contextual labeling (product vs onderdeel)
+                        *@
                         <option value="@item.Id" 
                                 data-name="@item.Name" 
                                 data-stock="@item.Stock" 
@@ -31,8 +112,10 @@
                 </select>
                 <button type="button" class="btn btn-success" id="addProduct">Toevoegen</button>
             </div>
+            @* USER FEEDBACK: Contextual warning voor selection validation *@
             <div class="warning-message" id="selectWarning">Selecteer eerst een @(isNormaal ? "product" : "onderdeel")</div>
         </div>
+        @* BUSINESS RULE FEEDBACK: Minimum order quantity warning *@
         <div class="warning-message" id="warningMessage">Minimaal @minItems stuks vereist voor bestelling.</div>
 
         <form id="orderForm" asp-controller="Voorraad" asp-action="OrderConfirm" method="post">

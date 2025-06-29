@@ -1,4 +1,24 @@
-﻿@model DataAccessLayer.Models.Part
+﻿@*
+    PART DELETE CONFIRMATION VIEW
+    =============================
+    
+    Veilige onderdeel verwijdering met business impact awareness.
+    Parts kunnen kritiek zijn voor productie, daarom comprehensive
+    review voor deletion confirmation.
+    
+    BUSINESS IMPACT:
+    - Part deletion kan production workflows verstoren
+    - Existing product assemblies kunnen beïnvloed worden
+    - Voorraad en cost calculations moeten herberekend worden
+    - Supply chain impact bij leverancier relaties
+    
+    SECURITY PATTERN:
+    - Two-step confirmation voor destructive operations
+    - Complete part specification review
+    - Hidden ID field voor secure identification
+*@
+
+@model DataAccessLayer.Models.Part
 
 @{
     ViewData["Title"] = "Part verwijderen";

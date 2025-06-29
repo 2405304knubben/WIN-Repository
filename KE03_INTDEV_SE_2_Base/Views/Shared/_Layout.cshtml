@@ -1,26 +1,53 @@
-﻿<!DOCTYPE html>
+﻿@*
+    _Layout.cshtml - Hoofd layout template voor de Matrix Inc. Admin applicatie
+    
+    Deze shared layout bevat:
+    - Algemene HTML structuur voor alle pagina's
+    - Navigatiebalk met hoofdmenu items
+    - Dynamische zoekfunctionaliteit 
+    - Gebruiker authenticatie status
+    - Responsive design met Bootstrap 5
+    - Consistent branding en styling
+    
+    Gebruikt door: Alle views via _ViewStart.cshtml
+*@
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
+    @* HTML5 meta tags voor responsive design en character encoding *@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    @* Dynamische page title - combineert view-specifieke titel met app naam *@
     <title>@ViewData["Title"] - Matrix Inc. Admin Paneel</title>
+    
+    @* CSS Dependencies - Bootstrap voor UI framework, custom styles voor branding *@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/KE03_INTDEV_SE_2_Base.styles.css" asp-append-version="true" />
+    
+    @* FontAwesome icons voor UI elementen *@
     <script src="https://kit.fontawesome.com/338a725bc5.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <header>  
+      @* Hoofdnavigatie - responsive navbar met zwart Matrix Inc. branding *@
       <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-black border-bottom box-shadow mb-3">  
           <div class="container-fluid">  
+              @* Logo/Brand link - navigeert naar homepage *@
               <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">  
                   <img src="~/Images/MatrixLOGO.png" alt="Matrix Inc. Logo" style="height: 50px; margin-right: 60px;" />  
               </a>  
+              
+              @* Mobile hamburger menu toggle button *@
               <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"  
                       aria-expanded="false" aria-label="Toggle navigation">  
                   <span class="navbar-toggler-icon"></span>  
               </button>  
+              
               <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">  
+                  @* Hoofdmenu links - navigatie naar primaire app functies *@
                   <ul class="navbar-nav flex-grow-1">  
                       <li class="nav-item">  
                           <a class="nav-link btn btn-black text-success" asp-area="" asp-controller="Home" asp-action="Index">Home</a>  
@@ -33,32 +60,49 @@
                       </li>  
                       <li class="nav-item">  
                           <a class="nav-link btn btn-black text-success" asp-area="" asp-controller="Orders" asp-action="Index">Bestellingen</a>  
-                      </li>                      <li class="nav-item">  
+                      </li>
+                      <li class="nav-item">  
                           <a class="nav-link btn btn-black text-success" asp-area="" asp-controller="Voorraad" asp-action="Order">Bijbestellen</a>  
-                      </li>                  </ul>  
+                      </li>
+                  </ul>  
+                  
+                  @* Dynamische zoekbalk - alleen zichtbaar op relevante pagina's *@
                   @{
+                      // Bepaal huidige controller om te beslissen of zoekfunctie getoond moet worden
                       var controller = ViewContext.RouteData.Values["Controller"]?.ToString()?.ToLower();
                       var showSearch = controller == "voorraad" || controller == "product";
                   }
                   @if (showSearch)
-                  {                      <form class="d-flex" asp-controller="Home" asp-action="Search" method="post" id="searchForm">  
+                  {
+                      @* Zoekformulier met auto-complete suggesties *@
+                      <form class="d-flex" asp-controller="Home" asp-action="Search" method="post" id="searchForm">  
                           <div class="position-relative">
+                              @* Zoek input veld *@
                               <input class="form-control me-2" type="search" name="search" id="searchInput" placeholder="Zoeken" aria-label="Search" autocomplete="off">  
+                              
+                              @* Container voor zoek suggesties - wordt dynamisch gevuld via JavaScript *@
                               <div id="searchSuggestions" class="position-absolute w-100 d-none" style="z-index: 1000; background: white; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                               </div>
                           </div>
+                          @* Zoek submit button met FontAwesome icoon *@
                           <button class="btn btn-outline-success" type="submit">
                               <i class="fa-solid fa-magnifying-glass"></i>
                           </button>  
                       </form>  
                   }
+                  
+                  @* Gebruiker menu - rechts uitgelijnd met dropdown *@
                   <ul class="navbar-nav flex-grow-1 justify-content-end">  
                       <li class="nav-item dropdown">  
+                          @* Gebruiker dropdown trigger - toont ingelogde gebruiker naam *@
                           <a class="nav-link dropdown-toggle btn btn-black text-success" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">  
                               <i class="fa-solid fa-user"></i> @(User.Identity?.Name ?? "User")  
                           </a>  
+                          
+                          @* Dropdown menu items *@
                           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">  
                               <li>  
+                                  @* Logout form - gebruikt POST method voor security (CSRF protection) *@
                                   <form asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">  
                                         @Html.AntiForgeryToken()  
                                         <button type="submit" class="dropdown-item text-danger d-flex align-items-center" style="background:none; border:none; padding:0;">
@@ -73,21 +117,29 @@
           </div>  
       </nav>  
     </header>
+    
+    @* Main content container - hier wordt de page-specifieke content gerenderd *@
     <div class="container">
         <main role="main" class="pb-3">
+            @* RenderBody() plaatst de inhoud van individuele views hier *@
             @RenderBody()
         </main>
     </div>
 
+    @* Footer - consistent branding en navigatie *@
     <footer class="border-top footer text-success bg-black box-shadow">
         <div class="container py-3 d-flex justify-content-between align-items-center">
             <span>&copy; 2025 - Matrix Inc. Admin Paneel</span>
             <a class="text-success" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+    
+    @* JavaScript Dependencies - jQuery, Bootstrap, custom scripts *@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    @* Optional Scripts sectie - views kunnen hier page-specifieke JavaScript toevoegen *@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

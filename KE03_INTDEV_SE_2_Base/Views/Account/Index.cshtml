@@ -1,42 +1,71 @@
+@*
+    Account/Index.cshtml - Login pagina voor Matrix Inc. Admin systeem
+    
+    Functionaliteit:
+    - Gebruiker authenticatie via eenvoudige username input
+    - Matrix-themed design met video achtergrond
+    - Responsive login form met Bootstrap styling
+    - Error handling voor ongeldige login pogingen
+    - Custom layout (geen standaard _Layout.cshtml)
+    
+    Security: POST-only form, server-side validatie in AccountController
+    Design: Volledig immersieve login ervaring met Matrix branding
+*@
+
 @{
     ViewData["Title"] = "Account";
-    Layout = null;
+    Layout = null; // Custom layout voor volledig branded login experience
 }
+
 <!DOCTYPE html>
 <html>
 <head>
+    @* Meta tags voor responsive design en character encoding *@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login - Matrix Inc.</title>
+    
+    @* Bootstrap 5 CSS voor responsive UI components *@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    @* Custom login styling voor Matrix theme *@
     <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
 </head>
 <body>
+    @* Matrix-themed video achtergrond voor immersieve experience *@
     <video autoplay loop muted playsinline id="bg-video">
         <source src="/Videos/matrix.mp4" type="video/mp4">
         Your browser does not support the video tag.
     </video>
 
+    @* ==================== LOGIN FORM SECTIE ==================== *@
     <section class="vh-100 loginbackground">
         <div class="container py-5 h-100">
+            @* Gecentreerde responsive grid voor login card *@
             <div class="row d-flex justify-content-center align-items-center h-100">
                 <div class="col-12 col-md-8 col-lg-6 col-xl-5">
+                    @* Login card met Matrix styling *@
                     <div class="card fade-in bg-dark text-white" style="border-radius: 1rem;">
                         <div class="card-body p-5 text-center">
+                            @* Login form - POST naar AccountController *@
                             <form method="post">
                                 <div class="mb-md-5 mt-md-4 pb-5">
+                                    @* Login header *@
                                     <h2 class="fw-bold mb-2 text-uppercase">Login</h2>
                                     <p class="text-white-50 mb-5">Voer je gebruikersnaam in</p>
 
+                                    @* Error message display - getoond bij ongeldige login *@
                                     @if (!string.IsNullOrEmpty(ViewData["ErrorMessage"]?.ToString()))
                                     {
                                         <div class="alert alert-danger">@ViewData["ErrorMessage"]</div>
                                     }
 
+                                    @* Username input field *@
                                     <div class="form-outline form-white mb-4">
                                         <input name="username" class="form-control form-control-lg" placeholder="Gebruikersnaam" />
                                     </div>
 
+                                    @* Submit button - Matrix green styling *@
                                     <button class="btn btn-outline-light btn-lg px-5 btn btn-success" type="submit">Login</button>
                                 </div>
                             </form>
@@ -47,6 +76,7 @@
         </div>
     </section>
 
+    @* Bootstrap JavaScript voor responsive components *@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

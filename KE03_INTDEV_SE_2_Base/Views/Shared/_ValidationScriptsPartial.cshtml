@@ -1,2 +1,21 @@
-﻿<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+﻿@*
+    _ValidationScriptsPartial.cshtml - Client-side validatie scripts voor formulieren
+    
+    Bevat:
+    - jQuery Validation library voor client-side form validatie
+    - jQuery Unobtrusive Validation voor ASP.NET Core integration
+    
+    Gebruik:
+    - Include in views met formulieren via @section Scripts
+    - Werkt samen met DataAnnotations uit Models
+    - Biedt real-time validatie zonder server roundtrip
+    
+    Benefits: Betere UX, minder server load, snellere feedback
+*@
+
+@* jQuery Validation - core validatie library *@
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+
+@* jQuery Unobtrusive Validation - ASP.NET Core integration *@
+@* Maakt automatisch validatie regels aan gebaseerd op Model attributes *@
 <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>

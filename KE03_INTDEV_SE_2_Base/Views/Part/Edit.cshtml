@@ -1,4 +1,36 @@
-﻿@model DataAccessLayer.Models.Part
+﻿@*
+    PART EDIT VIEW
+    ==============
+    
+    Geavanceerde bewerking interface voor onderdelen (Parts) met geïntegreerde
+    afbeelding upload functionaliteit. Vergelijkbaar met Product Edit maar
+    gespecialiseerd voor part management.
+    
+    ARCHITECTUUR:
+    - Strongly-typed view met Part model
+    - Asynchrone JavaScript voor sequential processing
+    - Real-time image preview functionaliteit
+    - Bootstrap responsive grid layout
+    
+    BUSINESS CONTEXT:
+    - Parts zijn kritieke componenten voor productie
+    - Accurate voorraadniveaus essentieel voor planning
+    - Visual documentation helpt bij identificatie
+    
+    EDUCATIEVE ASPECTEN:
+    - Advanced form handling patterns
+    - File upload met preview functionaliteit
+    - Async/await JavaScript programming
+    - Error handling best practices
+    
+    SECURITY & VALIDATION:
+    - Hidden ID field voor secure updates
+    - Server-side model validation
+    - File type restrictions voor uploads
+    - Comprehensive error handling
+*@
+
+@model DataAccessLayer.Models.Part
 
 @{
     ViewData["Title"] = "Onderdeel informatie aanpassen";

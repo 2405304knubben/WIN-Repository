@@ -1,3 +1,41 @@
+@*
+    VOORRAAD AANVULLING CREATE VIEW
+    ===============================
+    
+    Geavanceerde voorraad bijbestelling interface voor inventory management.
+    Biedt comprehensive reorder functionaliteit met real-time calculations
+    en interactive product/part selection.
+    
+    ARCHITECTUUR:
+    - List<VoorraadItemViewModel> voor multiple item processing
+    - Dynamic table generation met editable quantities
+    - Real-time subtotal calculations
+    - Modal-based confirmation workflow
+    - TempData voor cross-request messaging
+    
+    BUSINESS LOGIC:
+    - Mixed product/part reordering capability
+    - Current stock awareness voor reorder decisions
+    - Price calculations met Dutch formatting
+    - Flexible quantity adjustments
+    - Comprehensive order totalization
+    
+    EDUCATIEVE ASPECTEN:
+    - Complex collection binding patterns
+    - Dynamic form generation
+    - JavaScript integration voor calculations
+    - Bootstrap modal implementation
+    - Responsive table design
+    - LINQ aggregation in views
+    
+    UI/UX INNOVATION:
+    - Interactive quantity adjustment
+    - Real-time price calculations
+    - Visual feedback via alerts
+    - Progressive order building
+    - Confirmation workflow
+*@
+
 @using KE03_INTDEV_SE_2_Base.ViewModels
 @model List<VoorraadItemViewModel>
 

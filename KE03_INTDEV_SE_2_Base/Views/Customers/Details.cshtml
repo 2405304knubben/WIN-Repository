@@ -1,4 +1,39 @@
-﻿@model DataAccessLayer.Models.Customer
+﻿@*
+    CUSTOMER DETAILS VIEW
+    =====================
+    
+    Read-only klant informatie weergave voor customer relationship
+    management. Biedt comprehensive customer data visibility zonder
+    editing capabilities.
+    
+    ARCHITECTUUR:
+    - Strongly-typed Customer model voor type safety
+    - Definition list voor structured data presentation
+    - DisplayNameFor/DisplayFor helpers voor automatic rendering
+    - Responsive Bootstrap grid layout
+    
+    BUSINESS CONTEXT:
+    - Customer information lookup
+    - CRM data verification
+    - Customer status monitoring
+    - Contact information reference
+    
+    EDUCATIEVE ASPECTEN:
+    - Read-only data presentation patterns
+    - Semantic HTML met definition lists
+    - ASP.NET Core display helpers
+    - Responsive design principles
+    - Navigation workflow patterns
+    
+    UI/UX PATTERNS:
+    - Clean information architecture
+    - Matrix branding consistency
+    - Clear section headers
+    - Intuitive navigation buttons
+    - Status indication voor customer state
+*@
+
+@model DataAccessLayer.Models.Customer
 
 @{
     ViewData["Title"] = "Klant Informatie";

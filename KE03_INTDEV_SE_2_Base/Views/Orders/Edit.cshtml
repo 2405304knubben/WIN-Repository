@@ -1,24 +1,117 @@
-﻿@model KE03_INTDEV_SE_2_Base.ViewModels.OrderEditViewModel
+﻿@*
+    ORDER EDIT VIEW
+    ===============
+    
+    Geavanceerde bewerkingsinterface voor bestaande bestellingen. Biedt
+    granulaire controle over productaantallen met real-time voorraadvalidatie
+    en automatische totaalberekeningen.
+    
+    ARCHITECTUUR:
+    - Strongly-typed OrderEditViewModel voor complex data binding
+    - Table-based layout voor overzichtelijke data presentation
+    - Real-time validation met stock constraints
+    - Font Awesome icons voor enhanced UI
+    
+    BUSINESS LOGIC:
+    - Stock-aware quantity editing (current stock + ordered quantity)
+    - Automatic price calculations per line item
+    - Total order value computation
+    - Inventory impact awareness
+    
+    EDUCATIEVE ASPECTEN:
+    - Complex form binding met dictionary patterns
+    - LINQ aggregation in views (Sum operation)
+    - Cultural formatting voor currency display
+    - Input constraints met min/max attributes
+    - Bootstrap responsive table design
+    
+    UI/UX PATTERNS:
+    - Dark theme consistency met Matrix branding
+    - Contextual form validation
+    - Clear navigation breadcrumbs
+    - Icon-enhanced action buttons
+    - Stock constraint visualization
+    
+    VALIDATION:
+    - Server-side model validation
+    - Client-side quantity constraints
+    - Stock availability checking
+    - Input sanitization
+*@
+
+@model KE03_INTDEV_SE_2_Base.ViewModels.OrderEditViewModel
 
 @{
     ViewData["Title"] = "Order bewerken";
 }
 
+@* MATRIX BRANDING: Consistente achtergrondvideo *@
 <video autoplay loop muted playsinline id="bg-video">
     <source src="/Videos/matrix.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 
+@* 
+ORDER EDIT INTERFACE
+===================
+
+Container-based layout voor professional appearance:
+- Bootstrap container voor responsive behavior
+- Matrix-branded styling voor consistency
+- Card-based content organization
+*@
 <div class="container py-4">
+    @* HOOFDTITEL: Centered white text voor visibility tegen video background *@
     <h2 class="text-center text-white matrix-header mb-5">Order bewerken</h2>
+    
+    @* 
+    ORDER DETAILS CARD
+    =================
+    
+    Card layout met dark theme voor Matrix consistency:
+    - Header met order date information
+    - Body bevat complete editing interface
+    - Shadow effect voor visual depth
+    *@
     <div class="card matrix-card shadow">
+        @* 
+        CARD HEADER: Order metadata display
+        - Font Awesome calendar icon voor visual context
+        - Dutch date formatting voor local user experience
+        - Flexbox layout voor alignment
+        *@
         <div class="card-header bg-dark text-light d-flex justify-content-between align-items-center">
             <span><i class="fa-solid fa-calendar"></i> @Model.OrderDate.ToString("dd-MM-yyyy")</span>
         </div>
+        
+        @* 
+        CARD BODY: Main editing interface
+        Dark theme matching Matrix branding
+        *@
         <div class="card-body bg-dark text-light">
+            @* 
+            ORDER EDIT FORM
+            ==============
+            
+            Post-back form voor order modifications:
+            - asp-action="Edit" voor proper routing
+            - Hidden ID field voor secure record identification
+            *@
             <form asp-action="Edit" method="post">
+                @* VALIDATION: Model-level error display *@
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                @* SECURITY: Hidden field voor order ID protection *@
                 <input type="hidden" asp-for="Id" />
+                
+                @* 
+                ORDER PRODUCTS TABLE
+                ===================
+                
+                Comprehensive product editing interface:
+                - Dark table theme voor consistency
+                - Striping voor readability
+                - Editable quantity fields met constraints
+                *@
                 <table class="table table-dark table-striped">
                     <thead>
                         <tr>
@@ -33,8 +126,18 @@
                         @foreach (var product in Model.OrderProducts)
                         {
                             <tr>
+                                @* PRODUCT IDENTIFICATIE: Read-only product name *@
                                 <td>@product.ProductName</td>
+                                
+                                @* VOORRAAD INFO: Current stock levels voor context *@
                                 <td>@product.CurrentStock</td>
+                                
+                                @* 
+                                QUANTITY EDITOR:
+                                - Dictionary-based naming voor proper model binding
+                                - Min/max constraints based on stock availability
+                                - Current stock + ordered quantity als maximum
+                                *@
                                 <td>
                                     <input type="number" 
                                            name="productQuantities[@product.ProductId]" 
@@ -43,17 +146,38 @@
                                            min="0"
                                            max="@(product.CurrentStock + product.Quantity)" />
                                 </td>
+                                
+                                @* 
+                                PRICING INFORMATION:
+                                - Dutch culture formatting voor currency
+                                - Consistent decimal formatting
+                                *@
                                 <td>@product.Price.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"))</td>
                                 <td>@product.TotalPrice.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"))</td>
                             </tr>
                         }
                     </tbody>
+                    @* 
+                    TABLE FOOTER: Order totalization
+                    - LINQ Sum aggregation voor real-time total
+                    - Right-aligned totaal voor scanning ease
+                    *@
                     <tfoot>
                         <tr>
                             <td colspan="4" class="text-end"><strong>Totaal:</strong></td>
                             <td>@Model.OrderProducts.Sum(p => p.TotalPrice).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"))</td>
                         </tr>                    </tfoot>
                 </table>
+                
+                @* 
+                FORM ACTIONS
+                ============
+                
+                User-friendly action buttons met icons:
+                - Primary save action
+                - Secondary navigation back to overview
+                - Font Awesome icons voor visual enhancement
+                *@
                 <div class="form-group mt-4">
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
@@ -67,7 +191,7 @@
             </form>
         </div>
     </div>
-</div>
+}
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

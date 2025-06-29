@@ -1,3 +1,23 @@
+@*
+    ORDER TYPE SELECTION VIEW
+    =========================
+    
+    Bestellingstype selectie interface die gebruikers laat kiezen tussen
+    normale en bulk bestellingen. Gateway view voor verschillende order
+    workflows met duidelijke business rule communication.
+    
+    BUSINESS RULES:
+    - Normale bestelling: standaard workflow, geen minimum
+    - Bulk bestelling: minimaal 6 producten voor volume discounts
+    - Clear differentiation tussen order types
+    
+    UI/UX PATTERNS:
+    - Simple choice interface
+    - Visual hierarchy met button sizing
+    - Clear messaging over requirements
+    - Progressive disclosure naar order creation
+*@
+
 @{
     ViewData["Title"] = "Bestellen";
 }

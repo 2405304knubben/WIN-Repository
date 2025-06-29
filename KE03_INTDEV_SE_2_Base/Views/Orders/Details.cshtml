@@ -1,38 +1,109 @@
-﻿@model DataAccessLayer.Models.Part
+﻿@*
+    PART DETAILS VIEW (IN ORDERS FOLDER)
+    ====================================
+    
+    Deze view toont Part/Onderdeel informatie maar bevindt zich in de Orders folder.
+    Dit suggereert dat deze view mogelijk wordt gebruikt in de context van order 
+    management waar Part details nodig zijn.
+    
+    ARCHITECTUUR:
+    - Strongly-typed Part model voor type safety
+    - Read-only data presentation met DisplayFor helpers
+    - Definition list voor gestructureerde informatie
+    - Matrix branding met achtergrondvideo
+    
+    BUSINESS CONTEXT:
+    - Part details in order context
+    - Voorraad informatie voor order planning
+    - Prijsinformatie voor cost calculations
+    - Technical specifications voor assemblage
+    
+    EDUCATIEVE ASPECTEN:
+    - DisplayFor helpers voor automatic rendering
+    - Definition list semantics (dl/dt/dd)
+    - Responsive Bootstrap grid layout
+    - ASP.NET Core routing patterns
+    
+    UI/UX PATTERNS:
+    - Clean information architecture
+    - Consistent Matrix theming
+    - Clear navigation options
+    - Mobile-friendly responsive design
+    
+    MOGELIJK GEBRUIK:
+    - Part lookup tijdens order creation
+    - Inventory verification
+    - Cost calculation reference
+    - Technical specification review
+*@
+
+@model DataAccessLayer.Models.Part
 
 @{
     ViewData["Title"] = "Part Informatie";
 }
 
+@* HOOFDTITEL: Simple page identification *@
 <h1>Informatie</h1>
 
+@* MATRIX BRANDING: Consistente achtergrondvideo voor alle views *@
 <video autoplay loop muted playsinline id="bg-video">
     <source src="/Videos/matrix.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 
+@* 
+PART INFORMATION CONTAINER
+=========================
+
+Container voor part/onderdeel specificaties:
+- Simple div structure voor basic layout
+- Section header voor context identification
+- Horizontal rule voor visual separation
+*@
 <div>
+    @* SECTION HEADER: Duidelijke identificatie van content type *@
     <h4>Onderdeel</h4>
     <hr />
+    
+    @* 
+    PART SPECIFICATIONS LIST
+    =======================
+    
+    Definition list voor gestructureerde data presentation:
+    - dt (definition term) voor field labels
+    - dd (definition description) voor field values
+    - Bootstrap row/col classes voor responsive layout
+    - DisplayFor helpers voor type-safe rendering
+    *@
     <dl class="row">
+        @* PART NAME: Primaire identificatie van het onderdeel *@
         <dt class="col-sm-2">
             Naam
         </dt>
         <dd class="col-sm-10">
+            @* DisplayFor voor automatic formatting en type safety *@
             @Html.DisplayFor(model => model.Name)
         </dd>
+        
+        @* PART DESCRIPTION: Technical specifications en details *@
         <dt class="col-sm-2">
             Beschrijving
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Description)
         </dd>
+        
+        @* PART PRICE: Cost information voor order calculations *@
        <dt class="col-sm-2">
             Prijs
         </dt>
         <dd class="col-sm-10">
+            @* Automatic currency formatting via model metadata *@
             @Html.DisplayFor(model => model.Price)
         </dd>
+        
+        @* STOCK LEVEL: Inventory information voor availability checking *@
         <dt class="col-sm-2">
             Voorraad
         </dt>
@@ -40,8 +111,34 @@
             @Html.DisplayFor(model => model.Stock)
         </dd>
     </dl>
-</div>
+}
+@* 
+NAVIGATION ACTIONS
+==================
+
+Action links voor part management workflow:
+- Edit functionaliteit voor part modifications
+- Return to overview voor workflow continuity
+- asp-action Tag Helpers voor type-safe routing
+
+OPMERKING: Deze navigatie suggereert part management context,
+hoewel de view zich in Orders folder bevindt. Dit kan duiden op
+shared functionality tussen Part en Order management.
+*@
 <div>
+    @* 
+    EDIT ACTION:
+    - asp-action="Edit" routes naar Part Edit action
+    - asp-route-id voor parameter passing
+    - Null-conditional operator (?.) voor safe ID access
+    *@
     <a asp-action="Edit" asp-route-id="@Model?.Id">Aanpassen</a> |
+    
+    @* 
+    RETURN NAVIGATION:
+    - asp-action="Index" voor return to overview
+    - "Terug naar voorraad" suggests Voorraad controller context
+    - Suggests this view is used in inventory management workflow
+    *@
     <a asp-action="Index">Terug naar voorraad</a>
 </div>

@@ -1,3 +1,19 @@
-﻿@{
+﻿@*
+    _ViewStart.cshtml - Automatische layout configuratie voor alle views
+    
+    Dit bestand wordt automatisch uitgevoerd voordat elke view wordt gerenderd.
+    Het stelt de standaard layout in voor alle views in de applicatie.
+    
+    Functionaliteit:
+    - Definieert "_Layout" als standaard master page
+    - Wordt toegepast op alle views tenzij expliciet overschreven
+    - Zorgt voor consistente look-and-feel door de hele applicatie
+    
+    ASP.NET Core conventie: _ViewStart.cshtml in Views root folder
+*@
+
+@{
+    // Stel standaard layout in voor alle views
+    // Views kunnen dit overschrijven door Layout = "andere_layout" te specificeren
     Layout = "_Layout";
 }

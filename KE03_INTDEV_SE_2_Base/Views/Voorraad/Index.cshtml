@@ -1,24 +1,46 @@
+@*
+    Voorraad/Index.cshtml - Hoofdoverzicht van alle voorraad items (producten en onderdelen)
+    
+    Functionaliteit:
+    - Geïntegreerd overzicht van producten en onderdelen
+    - Real-time filtering op status (voorraad) en type
+    - Visual voorraad status indicators (in stock, low stock, out of stock)
+    - Product afbeeldingen met fallback naar placeholder
+    - Gerelateerde onderdelen weergave per product
+    - Bulk voorraad management acties
+    - Responsive card-based layout
+    
+    Model: ProductOverviewViewModel met Products en onderdelen data
+    Features: AJAX filtering, image handling, voorraad management
+*@
+
 @model KE03_INTDEV_SE_2_Base.ViewModels.ProductOverviewViewModel
 @{
     ViewData["Title"] = "Productoverzicht";
 }
 
+@* Matrix-themed video achtergrond voor consistente branding *@
 <video autoplay loop muted playsinline id="bg-video">
     <source src="/Videos/matrix.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 
 <div class="product-overview">
+    @* ==================== HEADER & CONTROLES ==================== *@
     <div class="header-section mb-4">
         <h1 class="mb-3">Voorraad Producten en Onderdelen</h1>        
         <div class="controls-row">
+            @* Filter controles voor voorraad management *@
             <div class="filters"> 
+                @* Status filter - filtert op voorraad beschikbaarheid *@
                 <select class="form-select" id="statusFilter">
                     <option value="" disabled selected>Filter Status</option>
                     <option value="">Alles</option>
                     <option value="instock">In voorraad</option>
                     <option value="outofstock">Niet op voorraad</option>
                 </select>
+                
+                @* Type filter - onderscheid tussen producten en onderdelen *@
                 <select class="form-select" id="typeFilter">
                     <option value="" disabled selected>Filter Type</option>
                     <option value="">Alles</option>
@@ -26,38 +48,53 @@
                     <option value="part">Onderdeel</option>
                 </select>
             </div>
+            
+            @* Actie knoppen voor voorraad management *@
             <div class="actions">
                 <a asp-controller="Product" asp-action="Create" class="btn btn-success">Nieuw Product</a>
             </div>
         </div>
     </div>
 
+    @* ==================== PRODUCTEN CONTAINER ==================== *@
     <div class="products-container">
+        @* Loop door alle producten voor kaart weergave *@
         @foreach (var item in Model.Products)
         {
+            @* Product kaart met data attributen voor filtering *@
             <div class="product-card" data-type="product">
                 <div class="product-header">
+                    @* Product naam en identificatie *@
                     <div class="product-id">@item.Name</div>
+                    
+                    @* Dynamische voorraad status met kleur coding *@
                     <div class="product-status @(item.Stock == 0 ? "status-outofstock" : (item.Stock < 15 ? "status-lowstock" : "status-instock"))">
                         @(item.Stock == 0 ? "Niet op voorraad" : (item.Stock < 15 ? "Bijna uitverkocht" : "In voorraad"))
                     </div>
+                    
+                    @* Product afbeelding met fallback handling *@
                     @if (item.Image != null)
                     {
                         <div class="product-image">
+                            @* Convert binary image data naar base64 voor weergave *@
                             <img src="data:image;base64,@Convert.ToBase64String(item.Image)" alt="@item.Name" />
                         </div>
                     }
                     else
                     {
                         <div class="product-image">
+                            @* Fallback afbeelding als geen product image beschikbaar *@
                             <img src="/Images/no-image.png" alt="Geen afbeelding beschikbaar" />
                         </div>
                     }
                 </div>                
                 
+                @* Product details sectie *@
                 <div class="product-content">
-                    
+                    @* Product beschrijving *@
                     <div class="product-description">@item.Description</div>
+                    
+                    @* Prijs en voorraad informatie *@
                     <div class="product-details">
                         <div class="price-info">
                             <span class="label">Prijs</span>
@@ -68,6 +105,8 @@
                             <span class="value">@item.Stock stuks</span>
                         </div>
                     </div>
+                    
+                    @* Gerelateerde onderdelen sectie - alleen als onderdelen bestaan *@
                     @if (item.Parts.Any())
                     {
                         <div class="parts-section">
@@ -75,6 +114,7 @@
                                 <span class="label">Gerelateerde Onderdelen:</span>
                             </div>
                             <div class="parts-list">
+                                @* Loop door alle gerelateerde onderdelen *@
                                 @foreach (var part in item.Parts)
                                 {
                                     <div class="part-item">

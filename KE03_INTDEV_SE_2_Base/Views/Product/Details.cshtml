@@ -1,38 +1,84 @@
-﻿@model DataAccessLayer.Models.Product
+﻿@*
+    PRODUCT DETAILS VIEW
+    ===================
+    
+    Read-only detailweergave van productinformatie voor gebruikers die een product
+    willen bekijken zonder deze direct te bewerken. Implementeert het "Show" pattern
+    van CRUD operaties.
+    
+    ARCHITECTUUR:
+    - Strongly-typed view met Product model
+    - Definition list (dl/dt/dd) voor gestructureerde data presentatie
+    - Bootstrap grid voor responsive layout
+    - Navigatieknoppen voor workflow continuïteit
+    
+    EDUCATIEVE ASPECTEN:
+    - Demonstratie van read-only data weergave
+    - Semantic HTML met definition lists
+    - Routing patterns met asp-route-id
+    - User experience met duidelijke navigation flows
+    
+    UI/UX PATTERNS:
+    - Information architecture via structured lists
+    - Consistent branding met Matrix theming
+    - Action-oriented navigation (Edit/Back)
+*@
+
+@model DataAccessLayer.Models.Product
 
 @{
     ViewData["Title"] = "Product Informatie";
 }
 
+@* MATRIX BRANDING: Consistente achtergrondvideo voor alle product views *@
 <video autoplay loop muted playsinline id="bg-video">
     <source src="/Videos/matrix.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 
+@* HOOFDTITEL: Duidelijke pagina-identificatie *@
 <h1 class="text-white">Informatie</h1>
 
+@* 
+PRODUCTINFORMATIE WEERGAVE
+=========================
+
+Definition list (dl) structuur voor semantisch correcte data presentatie:
+- dt (definition term) voor labels
+- dd (definition description) voor waarden
+- Bootstrap .row/.col classes voor responsive layout
+*@
 <div class="card matrix-card shadow mb-4">
     <h4>Product</h4>
     <hr />
     <dl class="row">
+        @* PRODUCTNAAM: Primaire identificatie *@
         <dt class="col-sm-2">
             Naam
         </dt>
         <dd class="col-sm-10">
+            @* Html.DisplayFor voor type-safe data weergave *@
             @Html.DisplayFor(model => model.Name)
         </dd>
+        
+        @* PRODUCTBESCHRIJVING: Uitgebreide informatie *@
         <dt class="col-sm-2">
             Beschrijving
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Description)
         </dd>
+        
+        @* PRIJSINFORMATIE: Financiële data met automatische formatting *@
        <dt class="col-sm-2">
             Prijs
         </dt>
         <dd class="col-sm-10">
+            @* DisplayFor gebruikt model metadata voor correct currency formatting *@
             @Html.DisplayFor(model => model.Price)        
         </dd>
+        
+        @* VOORRAADNIVEAU: Critical business information *@
         <dt class="col-sm-2">
             Voorraad
         </dt>
@@ -40,9 +86,25 @@
             @Html.DisplayFor(model => model.Stock)
         </dd>
     </dl>
-</div>
+}
 
+@* 
+NAVIGATIE ACTIES
+===============
+
+Gebruiksvriendelijke actieknoppen voor workflow continuïteit:
+- Edit actie met route parameter voor directe bewerking
+- Terugkeer naar overzicht voor contextbehoud
+*@
 <div>
+    @* 
+    BEWERK KNOP: 
+    - asp-action Tag Helper voor automatische routing
+    - asp-route-id voor parameter passing naar Edit action
+    - Null-conditional operator (?.) voor veilige ID toegang
+    *@
     <a class="btn btn-success" asp-action="Edit" asp-route-id="@Model?.Id">Aanpassen</a> |
+    
+    @* TERUG KNOP: Consistente navigatie naar hoofdoverzicht *@
     <a class="btn btn-secondary" asp-action="Index">Terug naar productenoverzicht</a>
 </div>

@@ -1,9 +1,24 @@
-﻿@model DataAccessLayer.Models.Product
+﻿@*
+    Product/Create.cshtml - Formulier voor het aanmaken van nieuwe producten
+    
+    Functionaliteit:
+    - Product gegevens invoer (naam, beschrijving, prijs, voorraad)
+    - Afbeelding upload met live preview
+    - Client-side en server-side validatie
+    - AJAX form submission voor better UX
+    - Twee-stappen proces: eerst product, dan afbeelding
+    
+    Model: Product entity met validatie attributes
+    Security: CSRF protection, file upload validatie
+*@
+
+@model DataAccessLayer.Models.Product
 
 @{
     ViewData["Title"] = "Nieuw Product aanmaken";
 }
 
+@* Matrix-themed video achtergrond voor consistente branding *@
 <video autoplay loop muted playsinline id="bg-video">
     <source src="/Videos/matrix.mp4" type="video/mp4">
     Your browser does not support the video tag.
@@ -11,28 +26,40 @@
 
 <h1 class="text-white">Nieuw Product aanmaken</h1>
 
+@* ==================== PRODUCT FORMULIER ==================== *@
 <div class="card matrix-card shadow mb-4">
     <h4>Product</h4>
     <hr />
     <div class="row">
+        @* Linker kolom: Product gegevens formulier *@
         <div class="col-md-8">
+            @* Hoofdformulier voor product data - CSRF protected *@
             <form asp-action="Create" id="productForm">
+                @* Validatie samenvatting - toont alle model errors *@
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                
+                @* Product naam veld *@
                 <div class="form-group mb-3">
                     <label asp-for="Name" class="control-label">Naam</label>
                     <input asp-for="Name" class="form-control" />
                     <span asp-validation-for="Name" class="text-danger"></span>
                 </div>
+                
+                @* Product beschrijving veld *@
                 <div class="form-group">
                     <label asp-for="Description" class="control-label">Beschrijving</label>
                     <input asp-for="Description" class="form-control" />
                     <span asp-validation-for="Description" class="text-danger"></span>
                 </div>
+                
+                @* Prijs veld - automatische currency formatting *@
                 <div class="form-group">
                     <label asp-for="Price" class="control-label">Prijs</label>
                     <input asp-for="Price" class="form-control" />
                     <span asp-validation-for="Price" class="text-danger"></span>
                 </div>
+                
+                @* Voorraad veld - integer validatie *@
                 <div class="form-group">
                     <label asp-for="Stock" class="control-label">Voorraad</label>
                     <input asp-for="Stock" class="form-control" />
@@ -40,15 +67,19 @@
                 </div>
             </form>
 
-            <!-- Separate form for image upload -->
+            @* Aparte form voor afbeelding upload - vereist multipart encoding *@
             <form id="imageForm" enctype="multipart/form-data" class="mb-3">
                 <div class="form-group">
                     <label for="imageFile" class="control-label">Afbeelding</label>
+                    @* File input met image filtering en preview functionaliteit *@
                     <input type="file" id="imageFile" name="imageFile" class="form-control" accept="image/*" onchange="previewImage(event)" />
                 </div>
             </form>
         </div>
+        
+        @* Rechter kolom: Afbeelding preview *@
         <div class="col-md-4">
+            @* Container voor live image preview - hidden by default *@
             <div id="imagePreview" class="image-preview-container" style="display: none;">
                 <h5 class="mb-3">Afbeelding Voorbeeld</h5>
                 <img src="" alt="Preview" class="img-preview" />
@@ -57,18 +88,26 @@
     </div>
 </div>
 
+@* ==================== ACTIE KNOPPEN ==================== *@
 <div>
+    @* Custom submit button - gebruikt JavaScript voor twee-stappen proces *@
     <input type="button" onclick="submitProduct()" value="Aanmaken" class="btn btn-primary" /> |
+    @* Terug navigatie naar product overzicht *@
     <a class="btn btn-secondary" asp-action="Index">Terug naar Product overzicht</a>
 </div>
 
 @section Scripts {
     <script>
+        /**
+         * Twee-stappen product submission proces
+         * 1. Submit product data via AJAX
+         * 2. Upload afbeelding met product ID als er een afbeelding is geselecteerd
+         */
         async function submitProduct() {
             const productForm = document.getElementById('productForm');
             const imageFile = document.getElementById('imageFile').files[0];
             
-            // First submit the product data
+            // STAP 1: Submit product gegevens
             const formData = new FormData(productForm);
             
             try {
@@ -79,8 +118,9 @@
 
                 if (response.ok) {
                     const result = await response.json();
+                    
+                    // STAP 2: Upload afbeelding als product succesvol aangemaakt
                     if (result.success && imageFile) {
-                        // If product was created successfully and there's an image, upload it
                         const imageFormData = new FormData();
                         imageFormData.append('id', result.productId);
                         imageFormData.append('type', 'product');
@@ -92,8 +132,10 @@
                         });
 
                         if (imageResponse.ok) {
+                            // Succesvol: navigeer naar product overzicht
                             window.location.href = '/Product';
                         } else {
+                            // Product created maar image upload gefaald
                             alert('Product aangemaakt, maar er is een fout opgetreden bij het uploaden van de afbeelding.');
                             window.location.href = '/Product';
                         }

@@ -1,9 +1,24 @@
+@*
+    Account/Logout.cshtml - Logout bevestigingspagina
+    
+    Functionaliteit:
+    - Bevestigt dat gebruiker succesvol is uitgelogd
+    - Biedt directe link terug naar login pagina
+    - Eenvoudige, gebruiksvriendelijke feedback
+    
+    Security: Toont alleen na succesvolle logout in AccountController
+*@
+
 @{
     ViewData["Title"] = "Logout";
 }
 
+@* ==================== LOGOUT BEVESTIGING ==================== *@
 <div class="text-center mt-5">
+    @* Bevestiging bericht *@
     <h2>U bent succesvol uitgelogd</h2>
     <p>Bedankt voor uw bezoek aan het Matrix Inc. Admin Paneel.</p> 
+    
+    @* Terug naar login navigatie *@
     <a class="btn btn-secondary" asp-area="" asp-controller="Account" asp-action="Login">Inloggen</a>
 </div>

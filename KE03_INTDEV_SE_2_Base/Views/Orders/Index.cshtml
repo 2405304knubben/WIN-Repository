@@ -1,30 +1,60 @@
+@*
+    Orders/Index.cshtml - Overzicht van alle bestellingen in het systeem
+    
+    Functionaliteit:
+    - Gegroepeerd overzicht van bestellingen per klant
+    - Totaal bedragen en item counts per bestelling
+    - Quick-access acties: Edit, Delete per bestelling
+    - Responsieve tabel layout voor bestelling details
+    - Type indicators voor producten vs onderdelen
+    - Nederlandse currency formatting
+    
+    Model: OrderViewModel met geaggregeerde bestelling data
+    Features: FontAwesome icons, Bootstrap cards, responsive design
+*@
+
 @model KE03_INTDEV_SE_2_Base.ViewModels.OrderViewModel
 
+@* Matrix-themed video achtergrond voor consistente branding *@
 <video autoplay loop muted playsinline id="bg-video">
     <source src="/Videos/matrix.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 
 <div class="container py-4">
+    @* ==================== HEADER SECTIE ==================== *@
     <h2 class="text-center text-white matrix-header mb-4">Bestellingsoverzicht</h2>
     
+    @* Nieuwe bestelling actie knop *@
     <div class="mb-3">
         <a asp-action="Create" class="btn btn-success">
             <i class="fa-solid fa-plus"></i> Nieuwe Bestelling
         </a>
     </div>
 
+    @* ==================== BESTELLINGEN LIJST ==================== *@
+    @* Loop door alle bestellingen gegroepeerd per klant *@
     @foreach (var orderDetail in Model.OrderDataForCustomer)
     {
+        @* Bestelling kaart met Matrix styling *@
         <div class="card matrix-card shadow mb-4">
+            @* Card header met klant info en bestelling acties *@
             <div class="card-header bg-dark text-light d-flex justify-content-between align-items-center">
                 <div>
+                    @* Klant naam met icoon *@
                     <span><i class="fa-solid fa-user"></i> @orderDetail.Order.Customer.Name</span>
+                    
+                    @* Bestelling datum - Nederlandse datum formatting *@
                     <span class="ms-3"><i class="fa-solid fa-calendar"></i> @orderDetail.Order.OrderDate.ToString("dd-MM-yyyy")</span>
+                    
+                    @* Aantal items in bestelling *@
                     <span class="ms-3"><i class="fa-solid fa-box"></i> @orderDetail.ProductDetails.Count() items</span>
                 </div>
                 <div>
+                    @* Totaal bedrag - Nederlandse currency formatting *@
                     <span class="me-3"><i class="fa-solid fa-money-bill"></i> @orderDetail.TotalOrderPrice.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"))</span>
+                    
+                    @* Bestelling acties: Edit en Delete *@
                     <a asp-action="Edit" asp-route-id="@orderDetail.Order.Id" class="btn btn-sm btn-primary me-2">
                         <i class="fa-solid fa-pen"></i>
                     </a>
@@ -33,8 +63,11 @@
                     </a>
                 </div>
             </div>
+            
+            @* Card body met bestelling details tabel *@
             <div class="card-body p-0">
                 <div class="table-responsive">
+                    @* Bestelling items tabel met Matrix styling *@
                     <table class="table table-dark table-striped mb-0">
                         <thead>
                             <tr>
@@ -46,13 +79,23 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @* Loop door alle producten in deze bestelling *@
                             @foreach (var product in orderDetail.ProductDetails)
                             {
                                 <tr>
+                                    @* Product naam *@
                                     <td>@product.ProductName</td>
+                                    
+                                    @* Product type badge - verschillende kleuren voor onderdelen vs producten *@
                                     <td><span class="badge @(product.Type == "Onderdeel" ? "bg-info" : "bg-primary")">@product.Type</span></td>
+                                    
+                                    @* Bestelde hoeveelheid *@
                                     <td>@product.Amount</td>
+                                    
+                                    @* Prijs per stuk - Nederlandse currency *@
                                     <td>@product.Price.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"))</td>
+                                    
+                                    @* Totaalprijs voor dit item *@
                                     <td>@product.TotalPrice.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"))</td>
                                 </tr>
                             }
@@ -63,6 +106,8 @@
         </div>
     }
 
+    @* ==================== EMPTY STATE ==================== *@
+    @* Toon bericht als er geen bestellingen zijn *@
     @if (!Model.OrderDataForCustomer.Any())
     {
         <div class="alert alert-info text-center">
@@ -72,5 +117,6 @@
 </div>
 
 @section Scripts {
+    @* Include validatie scripts voor form handling *@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }

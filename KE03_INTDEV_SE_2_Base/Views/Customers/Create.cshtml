@@ -1,4 +1,17 @@
-﻿@model DataAccessLayer.Models.Customer
+﻿@*
+    Customers/Create.cshtml - Formulier voor het aanmaken van nieuwe klanten
+    
+    Functionaliteit:
+    - Klant gegevens invoer (naam, adres, actieve status)
+    - Server-side model validatie met error display
+    - Custom JavaScript submit functie
+    - Matrix-themed styling voor consistentie
+    
+    Model: Customer entity met validatie attributes
+    Security: CSRF protection via asp-action Tag Helper
+*@
+
+@model DataAccessLayer.Models.Customer
 
 @{
     ViewData["Title"] = "Nieuwe klant aanmaken";
@@ -6,28 +19,38 @@
 
 <h1 class="text-white">Nieuwe klant aanmaken</h1>
 
+@* Matrix-themed video achtergrond voor consistente branding *@
 <video autoplay loop muted playsinline id="bg-video">
     <source src="/Videos/matrix.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 
+@* ==================== KLANT FORMULIER ==================== *@
 <div class="card matrix-card shadow mb-4">
     <h4>Klant</h4>
     <hr />
     <div class="row">
         <div class="col-md-4">
+            @* Klant aanmaak formulier met CSRF protection *@
             <form asp-action="Create" id="Submit">
+                @* Validatie samenvatting voor alle model errors *@
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                
+                @* Klant naam veld *@
                 <div class="form-group">
                     <label asp-for="Name" class="control-label"></label>
                     <input asp-for="Name" class="form-control" />
                     <span asp-validation-for="Name" class="text-danger"></span>
                 </div>
+                
+                @* Klant adres veld *@
                 <div class="form-group">
                     <label asp-for="Address" class="control-label"></label>
                     <input asp-for="Address" class="form-control" />
                     <span asp-validation-for="Address" class="text-danger"></span>
                 </div>
+                
+                @* Actieve status checkbox *@
                 <div class="form-group form-check">
                     <label class="form-check-label">
                         <input class="form-check-input" asp-for="Active" /> @Html.DisplayNameFor(model => model.Active)
@@ -38,13 +61,21 @@
     </div>
 </div>
 
+@* ==================== ACTIE KNOPPEN ==================== *@
 <div>
+    @* Custom submit knop met JavaScript functie *@
     <input type="button" onclick="myFunction()" value="Aanmaken" class="btn btn-primary" /> |
+    
+    @* Terug navigatie naar klanten overzicht *@
     <a class="btn btn-secondary" asp-action="Index">Terug naar klantenoverzicht</a>
 </div>
 
 @section Scripts {
     <script>
+        /**
+         * Custom submit functie voor het klant formulier
+         * Alternatief voor standaard submit button
+         */
         function myFunction() {
           document.getElementById("Submit").submit();
         }

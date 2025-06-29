@@ -1,25 +1,45 @@
-﻿@model KE03_INTDEV_SE_2_Base.ViewModels.CreateOrderViewModel
+﻿@*
+    Orders/Create.cshtml - Formulier voor het aanmaken van nieuwe bestellingen
+    
+    Functionaliteit:
+    - Klant selectie dropdown met alle actieve klanten
+    - Product selectie tabel met voorraad constraints
+    - Quantity input met min/max validatie gebaseerd op voorraad
+    - Nederlandse currency formatting voor prijzen
+    - Responsive table layout voor product overzicht
+    
+    Model: CreateOrderViewModel met klanten en producten data
+    Security: Server-side voorraad validatie in controller
+*@
+
+@model KE03_INTDEV_SE_2_Base.ViewModels.CreateOrderViewModel
 
 @{
     ViewData["Title"] = "Nieuwe Bestelling";
 }
 
+@* Matrix-themed video achtergrond voor consistente branding *@
 <video autoplay loop muted playsinline id="bg-video">
     <source src="/Videos/matrix.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 
 <div class="container py-4">
+    @* ==================== HEADER ==================== *@
     <h2 class="text-center text-white matrix-header mb-5">Nieuwe Bestelling</h2>
 
+    @* Bestelling aanmaak formulier met CSRF protection *@
     <form asp-action="Create" method="post">
+        @* ==================== KLANT SELECTIE ==================== *@
         <div class="card matrix-card shadow mb-4">
             <div class="card-header bg-dark text-light">
                 <h5 class="mb-0">Selecteer Klant</h5>
             </div>
             <div class="card-body p-0">
+                @* Klant dropdown - vereist voor bestelling *@
                 <select name="CustomerId" class="form-select" required>
                     <option value="">Selecteer een klant...</option>
+                    @* Loop door alle beschikbare klanten *@
                     @foreach (var customer in Model.Customers)
                     {
                         <option value="@customer.Id">@customer.Name</option>
@@ -28,12 +48,14 @@
             </div>
         </div>
         
+        @* ==================== PRODUCT SELECTIE ==================== *@
         <div class="card matrix-card shadow">
             <div class="card-header bg-dark text-light">
                 <h5 class="mb-0">Selecteer Producten</h5>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
+                    @* Product selectie tabel met voorraad constraints *@
                     <table class="table table-dark table-striped mb-0">
                         <thead>
                             <tr>
@@ -43,13 +65,24 @@
                                 <th>Aantal</th>
                             </tr>
                         </thead>
-                        <tbody>                            @foreach (var product in Model.Products)
+                        <tbody>
+                            @* Loop door alle beschikbare producten *@
+                            @foreach (var product in Model.Products)
                             {
                                 <tr>
+                                    @* Product naam *@
                                     <td>@product.Name</td>
+                                    
+                                    @* Prijs met Nederlandse currency formatting *@
                                     <td>@product.Price.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"))</td>
+                                    
+                                    @* Beschikbare voorraad - belangrijk voor order validatie *@
                                     <td>@product.Stock</td>
+                                    
+                                    @* Aantal input met voorraad constraints *@
                                     <td>
+                                        @* Number input met min/max validatie *@
+                                        @* name pattern zorgt voor correct model binding in controller *@
                                         <input type="number" name="productQuantities[@product.Id]" 
                                                class="form-control" style="max-width: 100px"
                                                min="0" max="@product.Stock" value="0" />
@@ -60,8 +93,13 @@
                     </table>
                 </div>
             </div>
+            
+            @* ==================== ACTIE KNOPPEN ==================== *@
             <div class="card-footer bg-dark">
+                @* Submit knop voor bestelling *@
                 <button type="submit" class="btn btn-success">Bestelling Plaatsen</button>
+                
+                @* Terug navigatie *@
                 <a asp-action="Index" class="btn btn-secondary">Terug naar Bestellingen</a>
             </div>
         </div>
@@ -69,5 +107,6 @@
 </div>
 
 @section Scripts {
+    @* Include client-side validatie voor form handling *@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }

@@ -1,38 +1,107 @@
-﻿@model DataAccessLayer.Models.Part
+﻿@*
+    PART CREATE VIEW
+    ================
+    
+    Formulier voor het aanmaken van nieuwe onderdelen (Parts) in het MatrixInc
+    voorraadsysteem. Parts representeren componenten die gebruikt worden in
+    de productie van eindproducten.
+    
+    ARCHITECTUUR:
+    - Strongly-typed view met Part model
+    - Form-based data input met server-side validatie
+    - JavaScript form submission voor enhanced UX
+    - Bootstrap responsive layout
+    
+    BUSINESS CONTEXT:
+    - Parts zijn onderdelen voor productassemblage
+    - Voorraadniveaus zijn critical voor production planning
+    - Prijzen beïnvloeden product cost calculations
+    
+    EDUCATIEVE ASPECTEN:
+    - Demonstratie van model binding
+    - Form validation patterns
+    - JavaScript DOM manipulation
+    - Responsive form design
+    
+    UI/UX PATTERNS:
+    - Single-column layout voor focus
+    - Clear labeling met control-label class
+    - Inline validation feedback
+    - Consistent navigation patterns
+*@
+
+@model DataAccessLayer.Models.Part
 
 @{
     ViewData["Title"] = "Nieuw Part aanmaken";
 }
 
+@* MATRIX BRANDING: Consistente achtergrondvideo voor alle part views *@
 <video autoplay loop muted playsinline id="bg-video">
     <source src="/Videos/matrix.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 
+@* HOOFDTITEL: Duidelijke actie-identificatie *@
 <h1 class="text-white">Nieuw Part aanmaken</h1>
 
+@* 
+PART FORMULIER INTERFACE
+=======================
+
+Card-based layout voor professionele uitstraling:
+- Matrix-branded styling voor consistency
+- Single-column focus layout
+- Clear section headers en dividers
+*@
 <div class="card matrix-card shadow mb-4">
     <h4>Part</h4>
     <hr />
     <div class="row">
+        @* 
+        FORMULIER KOLOM
+        ==============
+        
+        Compacte single-column layout (col-md-4) voor focused data entry:
+        - Vermindert cognitive load
+        - Optimaal voor eenvoudige CRUD operations
+        - Responsive op verschillende schermgroottes
+        *@
         <div class="col-md-4">
+            @* 
+            PART DATA FORMULIER
+            ==================
+            
+            Form met ID "Submit" voor JavaScript referentie:
+            - asp-action="Create" routes naar POST Create action
+            - ModelOnly validation toont alleen model-level errors
+            *@
             <form asp-action="Create" id="Submit">
+                @* VALIDATIE: Model-level foutmeldingen *@
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                
+                @* PART NAAM: Primaire identifier voor onderdeel *@
                 <div class="form-group">
                     <label asp-for="Name" class="control-label">Naam</label>
                     <input asp-for="Name" class="form-control" />
                     <span asp-validation-for="Name" class="text-danger"></span>
                 </div>
+                
+                @* PART BESCHRIJVING: Technische specificaties *@
                 <div class="form-group">
                     <label asp-for="Description" class="control-label">Beschrijving</label>
                     <input asp-for="Description" class="form-control" />
                     <span asp-validation-for="Description" class="text-danger"></span>
                 </div>
+                
+                @* PART PRIJS: Cost basis voor product calculations *@
                 <div class="form-group">
                     <label asp-for="Price" class="control-label">Prijs</label>
                     <input asp-for="Price" class="form-control" />
                     <span asp-validation-for="Price" class="text-danger"></span>
                 </div>
+                
+                @* VOORRAADNIVEAU: Inventory management voor production planning *@
                 <div class="form-group">
                     <label asp-for="Stock" class="control-label">Voorraad</label>
                     <input asp-for="Stock" class="form-control" />
@@ -41,19 +110,54 @@
             </form>
         </div>
     </div>
-</div>
+}
 
+@* 
+NAVIGATIE EN SUBMIT ACTIES
+==========================
+
+Gebruiksvriendelijke workflow controls:
+- JavaScript-enhanced submit voor betere UX
+- Duidelijke escape route naar overzicht
+*@
 <div>
+    @* 
+    SUBMIT KNOP:
+    Custom JavaScript submit in plaats van default form submit
+    Biedt mogelijkheid voor toekomstige enhancements (validatie, AJAX, etc.)
+    *@
     <input type="button" onclick="myFunction()" value="Aanmaken" class="btn btn-primary" /> |
+    
+    @* NAVIGATIE: Let op - route zou naar Part overzicht moeten zijn (niet klanten) *@
     <a class="btn btn-secondary" asp-action="Index">Terug naar klantenoverzicht</a>
 </div>
 
 @section Scripts {
     <script>
+        /*
+        FORM SUBMISSION HELPER
+        =====================
+        
+        Eenvoudige JavaScript functie voor form submission:
+        - getElementById voor DOM element access
+        - submit() method voor programmatic form submission
+        - Basis pattern voor form enhancement
+        
+        EDUCATIEVE WAARDE:
+        - Demonstratie van DOM manipulation
+        - Form submission via JavaScript
+        - Basis voor meer geavanceerde form handling
+        
+        TOEKOMSTIGE UITBREIDINGEN:
+        - Client-side validatie
+        - AJAX submission
+        - Loading states
+        - Error handling
+        */
         function myFunction() {
+          // Direct form submission via DOM reference
           document.getElementById("Submit").submit();
         }
     </script>
-}
 }
 

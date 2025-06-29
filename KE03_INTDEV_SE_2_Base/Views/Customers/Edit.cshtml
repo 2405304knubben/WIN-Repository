@@ -1,4 +1,17 @@
-﻿@model DataAccessLayer.Models.Customer
+﻿@*
+    Customers/Edit.cshtml - Formulier voor het bewerken van bestaande klanten
+    
+    Functionaliteit:
+    - Klant gegevens bewerking (naam, adres, actieve status)
+    - Pre-populated formulier met bestaande klant data
+    - Hidden field voor ID om entity tracking te behouden
+    - Server-side validatie met error feedback
+    
+    Model: Customer entity met bestaande data
+    Security: CSRF protection, ID verification in controller
+*@
+
+@model DataAccessLayer.Models.Customer
 
 @{
     ViewData["Title"] = "Klantinformatie aanpassen";
@@ -6,29 +19,41 @@
 
 <h1 class="text-white">Klanteninformatie aanpassen</h1>
 
+@* Matrix-themed video achtergrond voor consistente branding *@
 <video autoplay loop muted playsinline id="bg-video">
     <source src="/Videos/matrix.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 
+@* ==================== KLANT BEWERK FORMULIER ==================== *@
 <div class="card matrix-card shadow mb-4">
     <h4>Klant</h4>
     <hr />
     <div class="row">
         <div class="col-md-4">
+            @* Edit formulier met CSRF protection *@
             <form asp-action="Edit" id="Submit">
+                @* Validatie samenvatting voor model errors *@
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                
+                @* Hidden field voor klant ID - vereist voor Entity Framework tracking *@
                 <input type="hidden" asp-for="Id" />
+                
+                @* Klant naam veld - pre-populated *@
                 <div class="form-group">
                     <label asp-for="Name" class="control-label">Naam</label>
                     <input asp-for="Name" class="form-control" />
                     <span asp-validation-for="Name" class="text-danger"></span>
                 </div>
+                
+                @* Klant adres veld - pre-populated *@
                 <div class="form-group">
                     <label asp-for="Address" class="control-label">Adres</label>
                     <input asp-for="Address" class="form-control" />
                     <span asp-validation-for="Address" class="text-danger"></span>
                 </div>
+                
+                @* Actieve status checkbox - huidige status getoond *@
                 <div class="form-group form-check">
                     <label class="form-check-label">
                         <input class="form-check-input" asp-for="Active" /> Actief

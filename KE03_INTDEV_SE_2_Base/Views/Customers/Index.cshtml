@@ -1,4 +1,18 @@
-﻿@model IEnumerable<DataAccessLayer.Models.Customer>
+﻿@*
+    Customers/Index.cshtml - Overzicht van alle klanten in het systeem
+    
+    Functionaliteit:
+    - Tabelweergave van alle klanten (behalve Admin)
+    - CRUD operaties per klant: Create, Read, Update, Delete
+    - Status weergave (Actief/Inactief)
+    - Responsive tabel layout met Bootstrap
+    - Admin klant wordt gefilterd uit weergave
+    
+    Model: IEnumerable<Customer> - directe entity collection
+    Features: FontAwesome iconen voor acties, Matrix card styling
+*@
+
+@model IEnumerable<DataAccessLayer.Models.Customer>
 
 @{
     ViewData["Title"] = "Klantenoverzicht";
@@ -6,19 +20,24 @@
 
 <h1 class="text-white">Klanten overzicht</h1>
 
+@* Matrix-themed video achtergrond voor consistente branding *@
 <video autoplay loop muted playsinline id="bg-video">
     <source src="/Videos/matrix.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 
+@* ==================== ACTIES SECTIE ==================== *@
 <div class="mb-3">
+    @* Nieuwe klant aanmaken knop *@
     <a asp-action="Create" class="btn btn-success">
         <i class="fa-solid fa-plus"></i> Nieuwe Klant
     </a>
 </div>
 
+@* ==================== KLANTEN TABEL ==================== *@
 <div class="card matrix-card shadow mb-4">
     <table class="table">
+        @* Tabel header met kolom definities *@
         <thead>
             <tr>
                 <th>
@@ -36,28 +55,44 @@
             </tr>
         </thead>
         <tbody>
-    @foreach (var item in Model) {
-        @if (item.Name == "Admin")
-        {
-            continue;
-        }
-            <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Name)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Address)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Active)
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen"></i></a>
-                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info"><i class="fa-solid fa-info"></i></a>
-                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i></a>
-                </td>
-            </tr>
-    }
+            @* Loop door alle klanten behalve Admin *@
+            @foreach (var item in Model) {
+                @* Filter Admin klant uit de weergave *@
+                @* Admin wordt gebruikt voor interne voorraad bestellingen *@
+                @if (item.Name == "Admin")
+                {
+                    continue;
+                }
+                
+                <tr>
+                    @* Klant naam *@
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    
+                    @* Klant adres *@
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Address)
+                    </td>
+                    
+                    @* Actieve status (boolean weergave) *@
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Active)
+                    </td>
+                    
+                    @* CRUD actie knoppen *@
+                    <td>
+                        @* Edit klant - geel warning styling *@
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning"><i class="fa-solid fa-pen"></i></a>
+                        
+                        @* View details - blauw info styling *@
+                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info"><i class="fa-solid fa-info"></i></a>
+                        
+                        @* Delete klant - rood danger styling *@
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger"><i class="fa-solid fa-trash"></i></a>
+                    </td>
+                </tr>
+            }
         </tbody>
     </table>
 </div>

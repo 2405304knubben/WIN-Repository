@@ -1,3 +1,23 @@
-﻿@using KE03_INTDEV_SE_2_Base
+﻿@*
+    _ViewImports.cshtml - Globale using statements en directives voor alle views
+    
+    Dit bestand definieert common imports die beschikbaar zijn in alle Razor views.
+    Voorkomt duplication van using statements in individuele views.
+    
+    Bevat:
+    - Namespace imports voor models en applicatie classes
+    - Tag Helper registraties voor ASP.NET Core built-in helpers
+    - Globale directives die in alle views gebruikt kunnen worden
+    
+    ASP.NET Core conventie: _ViewImports.cshtml wordt automatisch toegepast
+*@
+
+@* Import hoofdnamespace van de applicatie *@
+@using KE03_INTDEV_SE_2_Base
+
+@* Import Models namespace - maakt alle ViewModels beschikbaar zonder volledig pad *@
 @using KE03_INTDEV_SE_2_Base.Models
+
+@* Registreer ASP.NET Core Tag Helpers voor gebruik in alle views *@
+@* Biedt helpers zoals asp-controller, asp-action, asp-for, etc. *@
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
