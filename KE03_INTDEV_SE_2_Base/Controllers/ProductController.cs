@@ -60,15 +60,13 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Description,Price,Stock")] Product product)
+        public async Task<IActionResult> Create([Bind("Id,Name,Description,Price,Stock")] Product product)
         {
             if (ModelState.IsValid)
             {
                 _context.Add(product);
                 await _context.SaveChangesAsync();
-                
-                // Return JSON result with success and product ID
-                return Json(new { success = true, productId = product.Id });
+                return RedirectToAction(nameof(Index));
             }
             return View(product);
         }
@@ -102,20 +100,8 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
             {
                 try
                 {
-                    var existingProduct = await _context.Products.FindAsync(id);
-                    if (existingProduct == null)
-                    {
-                        return NotFound();
-                    }
-
-                    // Update only the necessary fields, preserving the image
-                    existingProduct.Name = product.Name;
-                    existingProduct.Description = product.Description;
-                    existingProduct.Price = product.Price;
-                    existingProduct.Stock = product.Stock;
-
+                    _context.Update(product);
                     await _context.SaveChangesAsync();
-                    return Json(new { success = true });
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -128,6 +114,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                         throw;
                     }
                 }
+                return RedirectToAction(nameof(Index));
             }
             return View(product);
         }

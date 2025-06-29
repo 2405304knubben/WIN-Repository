@@ -25,8 +25,7 @@ namespace DataAccessLayer
             {
                 new Customer { Name = "Neo", Address = "123 Elm St" , Active=true},
                 new Customer { Name = "Morpheus", Address = "456 Oak St", Active = true },
-                new Customer { Name = "Trinity", Address = "789 Pine St", Active = true },
-                new Customer { Name = "Admin", Address = "Admin Street 1", Active = true }
+                new Customer { Name = "Trinity", Address = "789 Pine St", Active = true }
             };
             context.Customers.AddRange(customers);            var products = new Product[]
             {

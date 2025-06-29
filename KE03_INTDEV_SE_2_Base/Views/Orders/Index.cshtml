@@ -17,11 +17,10 @@
     @foreach (var orderDetail in Model.OrderDataForCustomer)
     {
         <div class="card matrix-card shadow mb-4">
-            <div class="card-header bg-dark text-light d-flex justify-content-between align-items-center">
-                <div>
+            <div class="card-header bg-dark text-light d-flex justify-content-between align-items-center"><div>
                     <span><i class="fa-solid fa-user"></i> @orderDetail.Order.Customer.Name</span>
                     <span class="ms-3"><i class="fa-solid fa-calendar"></i> @orderDetail.Order.OrderDate.ToString("dd-MM-yyyy")</span>
-                    <span class="ms-3"><i class="fa-solid fa-box"></i> @orderDetail.ProductDetails.Count() items</span>
+                    <span class="ms-3"><i class="fa-solid fa-box"></i> @orderDetail.ProductDetails.Count() producten</span>
                 </div>
                 <div>
                     <span class="me-3"><i class="fa-solid fa-money-bill"></i> @orderDetail.TotalOrderPrice.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"))</span>
@@ -38,19 +37,16 @@
                     <table class="table table-dark table-striped mb-0">
                         <thead>
                             <tr>
-                                <th>Item</th>
-                                <th>Type</th>
+                                <th>Product</th>
                                 <th>Aantal</th>
                                 <th>Prijs per stuk</th>
                                 <th>Totaal</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                        </thead>                        <tbody>
                             @foreach (var product in orderDetail.ProductDetails)
                             {
                                 <tr>
                                     <td>@product.ProductName</td>
-                                    <td><span class="badge @(product.Type == "Onderdeel" ? "bg-info" : "bg-primary")">@product.Type</span></td>
                                     <td>@product.Amount</td>
                                     <td>@product.Price.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"))</td>
                                     <td>@product.TotalPrice.ToString("C", System.Globalization.CultureInfo.GetCultureInfo("nl-NL"))</td>
@@ -65,8 +61,8 @@
 
     @if (!Model.OrderDataForCustomer.Any())
     {
-        <div class="alert alert-info text-center">
-            <p class="mb-0">Er zijn nog geen bestellingen geplaatst.</p>
+        <div class="alert alert-info">
+            <i class="fa-solid fa-info-circle"></i> Er zijn nog geen bestellingen geplaatst.
         </div>
     }
 </div>
@@ -74,3 +70,11 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
+
+    @if (!Model.OrderDataForCustomer.Any())
+    {
+        <div class="alert alert-info text-center">
+            <p class="mb-0">Je hebt nog geen bestellingen geplaatst.</p>
+        </div>
+    }
+</div>

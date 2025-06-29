@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using DataAccessLayer;
@@ -105,20 +104,8 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
             {
                 try
                 {
-                    var existingPart = await _context.Parts.FindAsync(id);
-                    if (existingPart == null)
-                    {
-                        return NotFound();
-                    }
-
-                    // Update all fields except image
-                    existingPart.Name = part.Name;
-                    existingPart.Description = part.Description;
-                    existingPart.Price = part.Price;
-                    existingPart.Stock = part.Stock;
-
+                    _context.Update(part);
                     await _context.SaveChangesAsync();
-                    return Json(new { success = true });
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -131,6 +118,7 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
                         throw;
                     }
                 }
+                return RedirectToAction(nameof(Index));
             }
             return View(part);
         }
@@ -166,31 +154,6 @@ namespace KE03_INTDEV_SE_2_Base.Controllers
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        // POST: Parts/UploadImage/5
-        [HttpPost]
-        public async Task<IActionResult> UploadImage(int id, IFormFile image)
-        {
-            if (image == null || image.Length == 0)
-            {
-                return BadRequest("Geen afbeelding geüpload");
-            }
-
-            var part = await _context.Parts.FindAsync(id);
-            if (part == null)
-            {
-                return NotFound();
-            }
-
-            using (var memoryStream = new MemoryStream())
-            {
-                await image.CopyToAsync(memoryStream);
-                part.Image = memoryStream.ToArray();
-            }
-
-            await _context.SaveChangesAsync();
-            return Ok();
         }
 
         private bool PartExists(int id)
