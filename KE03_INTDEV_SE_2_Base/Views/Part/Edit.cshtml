@@ -15,8 +15,8 @@
     <h4>Onderdeel</h4>
     <hr />
     <div class="row">
-        <div class="col-md-8">
-            <form asp-action="Edit" id="partForm">
+        <div class="col-md-4">
+            <form asp-action="Edit" id="Submit">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <input type="hidden" asp-for="Id" />
                 <div class="form-group">
@@ -39,124 +39,21 @@
                     <input asp-for="Stock" class="form-control" />
                     <span asp-validation-for="Stock" class="text-danger"></span>
                 </div>
-                <div class="form-group mt-3">
-                    <label for="imageFile" class="control-label">Afbeelding</label>
-                    <input type="file" id="imageFile" name="imageFile" class="form-control" accept="image/*" onchange="previewImage(event)" />
-                </div>
             </form>
-        </div>
-        <div class="col-md-4">
-            <div id="imagePreview" class="image-preview-container" style="@(Model.Image != null ? "" : "display: none;")">
-                <h5 class="mb-3">Afbeelding Voorbeeld</h5>
-                <img src="@(Model.Image != null ? $"data:image;base64,{Convert.ToBase64String(Model.Image)}" : "")" 
-                     alt="Preview" class="img-preview" />
-            </div>
         </div>
     </div>
 </div>
 
 <div>
-    <input type="button" onclick="submitPart()" value="Opslaan" class="btn btn-primary" /> |
-    <a class="btn btn-secondary" asp-action="Index">Terug naar onderdelen overzicht</a>
+    <input type="button" onclick="myFunction()" value="Opslaan" class="btn btn-primary" /> |
+    <a class="btn btn-secondary" asp-action="Index">Terug naar productenoverzicht</a>
 </div>
 
 @section Scripts {
     <script>
-        async function submitPart() {
-            const partForm = document.getElementById('partForm');
-            const imageFile = document.getElementById('imageFile').files[0];
-            
-            // First submit the part data
-            const formData = new FormData(partForm);
-            
-            try {
-                const response = await fetch(partForm.action, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (response.ok) {
-                    if (imageFile) {
-                        // If part was updated successfully and there's a new image, upload it
-                        const imageFormData = new FormData();
-                        imageFormData.append('id', '@Model.Id');
-                        imageFormData.append('type', 'part');
-                        imageFormData.append('image', imageFile);
-
-                        const imageResponse = await fetch('/Voorraad/UploadImage', {
-                            method: 'POST',
-                            body: imageFormData
-                        });
-
-                        if (imageResponse.ok) {
-                            window.location.href = '/Voorraad';
-                        } else {
-                            alert('Onderdeel bijgewerkt, maar er is een fout opgetreden bij het uploaden van de afbeelding.');
-                            window.location.href = '/Voorraad';
-                        }
-                    } else {
-                        window.location.href = '/Voorraad';
-                    }
-                } else {
-                    alert('Er is een fout opgetreden bij het bijwerken van het onderdeel.');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Er is een fout opgetreden bij het bijwerken van het onderdeel.');
-            }
-        }
-
-        function previewImage(event) {
-            const preview = document.getElementById('imagePreview');
-            const previewImg = preview.querySelector('img');
-            const file = event.target.files[0];
-            
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImg.src = e.target.result;
-                    preview.style.display = 'block';
-                }
-                reader.readAsDataURL(file);
-            } else {
-                preview.style.display = 'none';
-            }
+        function myFunction() {
+          document.getElementById("Submit").submit();
         }
     </script>
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    }
 }
-
-<style>
-    .form-group {
-        margin-bottom: 1rem;
-    }
-
-    .matrix-card {
-        padding: 20px;
-        background-color: white;
-        border-radius: 12px;
-    }
-
-    .image-preview-container {
-        background-color: #f8f9fa;
-        border-radius: 12px;
-        padding: 20px;
-        text-align: center;
-        height: 100%;
-        min-height: 300px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        border: 2px dashed #dee2e6;
-    }
-
-    .img-preview {
-        max-width: 100%;
-        max-height: 300px;
-        object-fit: contain;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        background-color: white;
-        padding: 10px;
-    }
-</style>
