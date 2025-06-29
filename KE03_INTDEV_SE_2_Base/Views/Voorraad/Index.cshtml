@@ -28,6 +28,7 @@
             </div>
             <div class="actions">
                 <a asp-controller="Product" asp-action="Create" class="btn btn-success">Nieuw Product</a>
+                <a asp-controller="Part" asp-action="Create" class="btn btn-info">Nieuw Onderdeel</a>
             </div>
         </div>
     </div>
@@ -41,22 +42,8 @@
                     <div class="product-status @(item.Stock == 0 ? "status-outofstock" : (item.Stock < 15 ? "status-lowstock" : "status-instock"))">
                         @(item.Stock == 0 ? "Niet op voorraad" : (item.Stock < 15 ? "Bijna uitverkocht" : "In voorraad"))
                     </div>
-                    @if (item.Image != null)
-                    {
-                        <div class="product-image">
-                            <img src="data:image;base64,@Convert.ToBase64String(item.Image)" alt="@item.Name" />
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="product-image">
-                            <img src="/Images/no-image.png" alt="Geen afbeelding beschikbaar" />
-                        </div>
-                    }
-                </div>                
-                
+                </div>
                 <div class="product-content">
-                    
                     <div class="product-description">@item.Description</div>
                     <div class="product-details">
                         <div class="price-info">
@@ -68,7 +55,7 @@
                             <span class="value">@item.Stock stuks</span>
                         </div>
                     </div>
-                    @if (item.Parts.Any())
+                    @if (item.Parts != null && item.Parts.Any())
                     {
                         <div class="parts-section">
                             <div class="parts-header">
@@ -89,13 +76,11 @@
                     <a asp-controller="Product" asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning"><i
                             class="fa-solid fa-pen"></i></a>
                     <a asp-controller="Product" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info"><i
-                            class="fa-solid fa-info"></i></a>                    <a asp-controller="Product" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger"><i
+                            class="fa-solid fa-info"></i></a>
+                    <a asp-controller="Product" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger"><i
                             class="fa-solid fa-trash"></i></a>
-                    <a asp-controller="Voorraad" asp-action="Create" asp-route-id="@item.Id" class="btn btn-sm btn-success"><i
-                            class="fa-solid fa-truck"></i></a>
-                    <button type="button" class="btn btn-sm btn-primary" onclick="openImageUpload(@item.Id, 'product')">
-                        <i class="fa-solid fa-camera"></i>
-                    </button>
+                    <a asp-controller="Voorraad" asp-action="Create" asp-route-id="@item.Id" asp-route-type="product" class="btn btn-sm btn-success">
+                        <i class="fa-solid fa-truck"></i></a>
                 </div>
             </div>
         }
@@ -108,21 +93,13 @@
                     <div class="product-status @(item.Stock == 0 ? "status-outofstock" : (item.Stock < 15 ? "status-lowstock" : "status-instock"))">
                         @(item.Stock == 0 ? "Niet op voorraad" : (item.Stock < 15 ? "Bijna uitverkocht" : "In voorraad"))
                     </div>
-                    @if (item.Image != null)
-                    {
-                        <div class="product-image">
-                            <img src="data:image;base64,@Convert.ToBase64String(item.Image)" alt="@item.Name" />
-                        </div>
-                    }
-                </div>                <div class="product-content">
-                   
+                </div>
+                <div class="product-content">
                     <div class="product-description">@item.Description</div>
                     <div class="product-details">
-                        <div class="usage-info">
-                            <span class="label">Prijs:</span>
-                            <div class="parts-list">
-                                <span class="value">€@item.Price.ToString("N2")</span>
-                            </div>
+                        <div class="price-info"> {/* Gewijzigd van usage-info en parts-list naar price-info */}
+                            <span class="label">Prijs</span>
+                            <span class="value">€@item.Price.ToString("N2")</span>
                         </div>
                         <div class="stock-info">
                             <span class="label">Voorraad</span>
@@ -145,75 +122,51 @@
     </div>
 </div>
 
-<!-- Image Upload Modal -->
-<div class="modal fade" id="imageUploadModal" tabindex="-1" aria-labelledby="imageUploadModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="imageUploadModalLabel">Upload Afbeelding</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <form id="imageUploadForm" method="post" enctype="multipart/form-data">
-                <div class="modal-body">
-                    <input type="hidden" id="itemId" name="id" />
-                    <input type="hidden" id="itemType" name="type" />
-                    <div class="mb-3">
-                        <label for="image" class="form-label">Kies een afbeelding</label>
-                        <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
-                    </div>
-                    <div id="imagePreview" class="text-center" style="display: none;">
-                        <img src="" alt="Preview" style="max-width: 100%; max-height: 200px;" />
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuleren</button>
-                    <button type="submit" class="btn btn-primary">Uploaden</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <style>
     .product-overview {
         padding: 20px;
-        background-color: #f8f9fa;
-        min-height: 100vh;
+        background-color: #f8f9fa; /* Behoud achtergrondkleur voor scrollende content */
+        min-height: 100vh; /* Zorgt ervoor dat de achtergrond de hele viewport vult */
     }
 
     .header-section {
         position: sticky;
-        top: 0;
-        background-color: #f8f9fa;
-        z-index: 100;
-        padding: 10px 0;
+        top: 0; /* Maakt de header sticky aan de bovenkant */
+        background-color: #f8f9fa; /* Achtergrond voor de sticky header */
+        z-index: 100; /* Zorgt dat de header boven andere content blijft */
+        padding: 10px 0; /* Padding voor de header */
+        border-bottom: 1px solid #dee2e6; /* Subtiele lijn onder de header */
     }
 
     .controls-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 20px;
+        gap: 20px; /* Ruimte tussen filter- en actieknoppen */
     }
 
     .filters {
         display: flex;
-        gap: 15px;
+        gap: 15px; /* Ruimte tussen de select-elementen */
     }
 
     .form-select {
-        min-width: 150px;
+        min-width: 150px; /* Minimale breedte voor de filters */
         padding: 8px 12px;
         border-radius: 6px;
         border: 1px solid #ddd;
         background-color: white;
     }
+    .actions {
+        display: flex;
+        gap: 10px; /* Ruimte tussen actieknoppen */
+    }
 
     .products-container {
         display: flex;
-        flex-direction: column;
-        gap: 20px;
-        padding: 20px 0;
+        flex-direction: column; /* Items onder elkaar */
+        gap: 20px; /* Ruimte tussen de product cards */
+        padding: 20px 0; /* Padding boven en onder de container */
     }
 
     .product-card {
@@ -223,32 +176,32 @@
         padding: 20px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         transition: transform 0.2s, box-shadow 0.2s;
-        display: flex;
-        gap: 20px;
-        align-items: stretch;
-        min-height: 150px;
+        display: flex; /* Gebruik flexbox voor interne layout */
+        gap: 20px; /* Ruimte tussen de kolommen binnen een card */
+        align-items: stretch; /* Zorgt dat kolommen even hoog zijn */
+        min-height: 150px; /* Minimale hoogte voor consistentie */
     }
 
     .product-card:hover {
-        transform: translateX(5px);
+        transform: translateX(5px); /* Subtiel hover effect */
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
     .product-header {
-        flex: 0 0 200px;
+        flex: 0 0 200px; /* Vaste breedte voor de linkerkolom (naam/status) */
         display: flex;
         flex-direction: column;
         gap: 10px;
-        padding-right: 20px;
-        border-right: 1px solid #dee2e6;
+        padding-right: 20px; /* Ruimte voor de border */
+        border-right: 1px solid #dee2e6; /* Scheidingslijn */
     }
 
     .product-content {
-        flex: 1;
+        flex: 1; /* Neemt de resterende ruimte in */
         display: flex;
         flex-direction: column;
-        gap: 15px;
-        padding: 0 20px;
+        gap: 15px; /* Ruimte tussen content-elementen */
+        padding: 0 20px; /* Padding binnen de content-kolom */
     }
 
     .product-id {
@@ -259,25 +212,25 @@
 
     .product-status {
         padding: 6px 12px;
-        border-radius: 20px;
+        border-radius: 20px; /* Ronde hoeken voor status badges */
         font-size: 0.9em;
         font-weight: 500;
         text-align: center;
-        width: fit-content;
+        width: fit-content; /* Past zich aan de tekstbreedte aan */
     }
 
     .status-instock {
-        background-color: #d4edda;
+        background-color: #d4edda; /* Groen voor 'in voorraad' */
         color: #155724;
     }
 
     .status-lowstock {
-        background-color: #ffecb5;
+        background-color: #ffecb5; /* Oranje/geel voor 'bijna uitverkocht' */
         color: #664d03;
     }
 
     .status-outofstock {
-        background-color: #f8d7da;
+        background-color: #f8d7da; /* Rood voor 'niet op voorraad' */
         color: #721c24;
     }
 
@@ -286,24 +239,21 @@
         font-size: 0.95em;
         line-height: 1.5;
     }
-
+    
     .product-details {
-        background-color: #f8f9fa;
+        background-color: #f8f9fa; /* Lichte achtergrond voor details sectie */
         border-radius: 8px;
         padding: 12px;
+        display: flex;
+        flex-direction: column; /* Details onder elkaar */
+        gap: 10px; /* Ruimte tussen prijs en voorraad info */
     }
 
     .price-info,
     .stock-info {
         display: flex;
-        flex-direction: column;
+        flex-direction: column; /* Label boven waarde */
         gap: 5px;
-    }
-
-    .product-details {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
     }
 
     .label {
@@ -320,7 +270,7 @@
     }
 
     .parts-section {
-        margin-top: auto;
+        margin-top: auto; /* Duwt de onderdelen sectie naar beneden als er ruimte is */
     }
 
     .parts-header {
@@ -329,7 +279,7 @@
 
     .parts-list {
         display: flex;
-        flex-wrap: wrap;
+        flex-wrap: wrap; /* Onderdelen kunnen naar volgende regel */
         gap: 8px;
     }
 
@@ -343,20 +293,21 @@
 
     .product-actions {
         display: flex;
-        flex-direction: column;
+        flex-direction: column; /* Knoppen onder elkaar */
         gap: 8px;
-        justify-content: center;
-        padding-left: 20px;
-        border-left: 1px solid #dee2e6;
+        justify-content: center; /* Centreert knoppen verticaal */
+        padding-left: 20px; /* Ruimte voor de border */
+        border-left: 1px solid #dee2e6; /* Scheidingslijn */
+        flex: 0 0 auto; /* Voorkomt dat deze kolom te veel krimpt/groeit */
     }
 
     .btn-sm {
-        padding: 0.4rem 0.8rem;
+        padding: 0.4rem 0.8rem; /* Iets meer padding voor betere klikbaarheid */
         border-radius: 6px;
     }
 
     .btn-sm i {
-        font-size: 0.9em;
+        font-size: 0.9em; /* Grootte van de iconen */
     }
 
     .btn-warning {
@@ -376,136 +327,59 @@
         border-color: #dc3545;
         color: white;
     }
-
-    .product-image {
-        margin-bottom: 15px;
-        text-align: center;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        padding: 10px;
-    }
-
-    .product-image img {
-        max-width: 100%;
-        max-height: 200px;
-        object-fit: contain;
-    }
-
-    #imagePreview {
-        margin-top: 15px;
-        padding: 10px;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-    }
-
-    .modal-content {
-        background-color: white;
-        border-radius: 12px;
-    }
-
-    .modal-header {
-        border-bottom: 1px solid #dee2e6;
-        background-color: #f8f9fa;
-        border-radius: 12px 12px 0 0;
-    }
-
-    .modal-footer {
-        border-top: 1px solid #dee2e6;
-        background-color: #f8f9fa;
-        border-radius: 0 0 12px 12px;
-    }
-
-    .btn-primary {
+    .btn-success { /* Stijl voor de "Nieuw Product/Onderdeel" en "Voorraad Bijbestellen" knoppen */
         background-color: #28a745;
         border-color: #28a745;
-    }
-
-    .btn-primary:hover {
-        background-color: #218838;
-        border-color: #1e7e34;
+        color: white;
     }
 </style>
 
-@section Scripts {
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const statusFilter = document.getElementById('statusFilter');
-            const typeFilter = document.getElementById('typeFilter');
-            const products = document.querySelectorAll('.product-card');
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const statusFilter = document.getElementById('statusFilter');
+        const typeFilter = document.getElementById('typeFilter');
+        const productsContainer = document.querySelector('.products-container'); // Selecteer de container
+        const productCards = Array.from(productsContainer.querySelectorAll('.product-card')); // Maak een statische array
 
-            function applyFilters() {
-                const statusValue = statusFilter.value;
-                const typeValue = typeFilter.value;
+        function applyFilters() {
+            const statusValue = statusFilter.value;
+            const typeValue = typeFilter.value;
 
-                products.forEach(product => {
-                    let show = true; if (statusValue) {
-                        const statusElement = product.querySelector('.product-status');
-                        let status = 'outofstock';
-                        if (statusElement.classList.contains('status-instock') || statusElement.classList.contains('status-lowstock')) {
-                            status = 'instock';
-                        }
-                        if (status !== statusValue) show = false;
+            productCards.forEach(card => {
+                let showStatus = true;
+                let showType = true;
+
+                // Status filter
+                if (statusValue) {
+                    const statusElement = card.querySelector('.product-status');
+                    let currentStatus = 'outofstock'; // Default to outofstock
+                    if (statusElement.classList.contains('status-instock')) {
+                        currentStatus = 'instock';
+                    } else if (statusElement.classList.contains('status-lowstock')) {
+                        // Low stock is also considered 'instock' for filtering purposes
+                        // unless you want a separate 'lowstock' filter option.
+                        currentStatus = 'instock'; 
                     }
+                    showStatus = (currentStatus === statusValue);
+                }
 
-                    if (typeValue) {
-                        const type = product.dataset.type;
-                        if (type !== typeValue) show = false;
-                    }
+                // Type filter
+                if (typeValue) {
+                    const currentType = card.dataset.type;
+                    showType = (currentType === typeValue);
+                }
 
-                    product.style.display = show ? 'flex' : 'none';
-                });
-            }
-
-            statusFilter.addEventListener('change', applyFilters);
-            typeFilter.addEventListener('change', applyFilters);
-        });
-
-        function openImageUpload(id, type) {
-            document.getElementById('itemId').value = id;
-            document.getElementById('itemType').value = type;
-            
-            const modal = new bootstrap.Modal(document.getElementById('imageUploadModal'));
-            modal.show();
+                card.style.display = (showStatus && showType) ? 'flex' : 'none';
+            });
         }
 
-        // Preview image before upload
-        document.getElementById('image').addEventListener('change', function(e) {
-            const preview = document.getElementById('imagePreview');
-            const previewImg = preview.querySelector('img');
-            
-            if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImg.src = e.target.result;
-                    preview.style.display = 'block';
-                }
-                reader.readAsDataURL(this.files[0]);
-            } else {
-                preview.style.display = 'none';
-            }
-        });
-
-        // Handle form submission
-        document.getElementById('imageUploadForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(this);
-            
-            fetch('/Voorraad/UploadImage', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                if (response.ok) {
-                    window.location.reload();
-                } else {
-                    alert('Er is een fout opgetreden bij het uploaden van de afbeelding.');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Er is een fout opgetreden bij het uploaden van de afbeelding.');
-            });
-        });
-    </script>
-}
+        if(statusFilter) statusFilter.addEventListener('change', applyFilters);
+        if(typeFilter) typeFilter.addEventListener('change', applyFilters);
+        
+        // Apply filters on initial load if any filter has a pre-selected value (excluding disabled placeholder)
+        if ((statusFilter && statusFilter.value && statusFilter.options[statusFilter.selectedIndex].text !== 'Filter Status') || 
+            (typeFilter && typeFilter.value && typeFilter.options[typeFilter.selectedIndex].text !== 'Filter Type')) {
+            applyFilters();
+        }
+    });
+</script>
