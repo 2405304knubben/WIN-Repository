@@ -37,6 +37,10 @@
         </thead>
         <tbody>
     @foreach (var item in Model) {
+        @if(item.Name.ToLower().Contains("admin"))
+        {
+            continue;
+        }
             <tr>
                 <td>
                     @Html.DisplayFor(modelItem => item.Name)
