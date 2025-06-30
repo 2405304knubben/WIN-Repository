@@ -1,118 +1,61 @@
-@*
-    ORDER CONFIRMATION VIEW
-    ======================
-    
-    Finale bevestigingsstap in het bestellingsproces. Implementeert een
-    two-step confirmation pattern voor veilige order processing met
-    modal dialogs voor enhanced user experience.
-    
-    ARCHITECTUUR:
-    - Strongly-typed OrderEditViewModel voor data consistency
-    - TempData voor cross-request state management
-    - Bootstrap modals voor confirmation workflow
-    - Hidden form fields voor secure data transmission
-    
-    BUSINESS WORKFLOW:
-    1. Order review met complete itemization
-    2. Price calculation en totalization
-    3. Two-step confirmation (button + modal)
-    4. Success feedback met navigation options
-    
-    EDUCATIEVE ASPECTEN:
-    - Modal-based confirmation patterns
-    - Complex form data transmission
-    - LINQ queries in Razor (Where clausules)
-    - Decimal calculation precision
-    - User experience optimization
-    
-    UI/UX PATTERNS:
-    - Clear order summary presentation
-    - Progressive confirmation workflow
-    - Multiple exit strategies na completion
-    - Responsive table design
-    - Contextual success messaging
-    
-    SECURITY:
-    - Hidden field validation
-    - Order integrity verification
-    - Secure form submission
-*@
-
+@* Dit is ons speciaal boekje waar alle informatie over de bestelling in staat! *@
 @model KE03_INTDEV_SE_2_Base.ViewModels.OrderEditViewModel
 
 @{
+    @* Hier geven we onze pagina een naam, net zoals jij een naam hebt! *@
     ViewData["Title"] = "Bestelling bevestigen";
-    // Cross-request data retrieval via TempData
+    @* We kijken wat voor soort bestelling het is - gewoon of heel veel tegelijk *@
     var orderType = TempData["OrderType"] as string ?? "normaal";
+    @* We checken of het een gewone bestelling is, zoals wanneer mama één appel koopt *@
     var isNormaal = orderType == "normaal";
 }
 
-@* MATRIX BRANDING: Consistente achtergrondvideo voor alle views *@
+@* Dit is een film die de hele tijd speelt op de achtergrond, zoals een tekenfilm! *@
 <video autoplay loop muted playsinline id="bg-video">
     <source src="/Videos/matrix.mp4" type="video/mp4">
     Your browser does not support the video tag.
 </video>
 
-@* 
-CONFIRMATION MODAL
-==================
-
-Eerste stap van two-step confirmation process:
-- Bootstrap 5 modal implementation
-- Accessibility attributes (aria-labelledby, aria-hidden)
-- Clear confirmation question voor user awareness
-- Primary/secondary button hierarchy
-*@
+@* Dit is een speciaal venster dat opengaat om te vragen: "Weet je het zeker?" *@
 <!-- Confirm Modal -->
 <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
+                @* De titel van ons vraag-venster *@
                 <h5 class="modal-title" id="confirmModalLabel">Bevestig bestelling</h5>
-                @* ACCESSIBILITY: btn-close voor keyboard/screen reader users *@
+                @* Een kruisje om het venster te sluiten, zoals je deur dichtdoet *@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                @* Hier staat de vraag die we stellen *@
                 <p>Wilt u deze bestelling bevestigen?</p>
             </div>
             <div class="modal-footer">
-                @* PRIMARY ACTION: Bevestigen button triggers order processing *@
+                @* Twee knoppen: één om "Ja!" te zeggen en één om "Nee, toch niet" te zeggen *@
                 <button type="button" class="btn btn-primary" id="confirmButton">Bevestigen</button>
-                @* ESCAPE ROUTE: Annuleren voor safe exit *@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuleren</button>
             </div>
         </div>
     </div>
 </div>
 
-@* 
-SUCCESS FEEDBACK MODAL
-======================
-
-Post-processing success notification met navigation options:
-- Success messaging voor positive user feedback
-- Multiple navigation paths voor flexible workflow
-- Clear call-to-action buttons
-- Enhanced user experience na order completion
-*@
+@* Dit is een blij venster dat opengaat als alles goed is gegaan! *@
 <!-- Success Modal -->
 <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
+                @* Een vrolijke titel die zegt: "Hoera, het is gelukt!" *@
                 <h5 class="modal-title" id="successModalLabel">Bestelling succesvol!</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
+                @* We vertellen dat alles goed is gegaan en vragen waar ze naartoe willen *@
                 <p>De bestelling is succesvol verwerkt. Waar wilt u naartoe?</p>
             </div>
             <div class="modal-footer">
-                @* 
-                NAVIGATION OPTIONS:
-                - Url.Action helper voor type-safe routing
-                - Orders overzicht voor order management workflow
-                - Voorraad overzicht voor continued shopping
-                *@
+                @* Twee knoppen om naar verschillende plekken te gaan, zoals kiezen tussen speeltuin of zwembad! *@
                 <a href="@Url.Action("Index", "Orders")" class="btn btn-primary">Ga naar bestellingen</a>
                 <a href="@Url.Action("Index", "Voorraad")" class="btn btn-secondary">Ga naar productoverzicht</a>
             </div>
@@ -120,145 +63,77 @@ Post-processing success notification met navigation options:
     </div>
 </div>
 
-@* 
-ORDER SUMMARY INTERFACE
-=======================
-
-Hoofdcontainer voor order review en confirmation:
-- Bootstrap container voor responsive layout
-- Card-based design voor visuele organisatie
-- Dark header voor Matrix branding consistency
-- Responsive table voor order itemization
-*@
+@* Dit is de grote doos waar al onze informatie in staat, zoals een speelgoeddoos! *@
 <div class="container mt-4">
+    @* Dit is een mooie kaart, zoals een verjaardagskaart maar dan voor bestellingen *@
     <div class="card">
-        @* 
-        CARD HEADER: Order type identification
-        - Conditional text gebaseerd op orderType variable
-        - Dark background voor Matrix theme consistency
-        - Clear typography hierarchy
-        *@
+        @* De bovenkant van de kaart met een mooie donkere kleur *@
         <div class="card-header bg-dark text-white">
+            @* We laten zien of het een gewone bestelling is of een hele grote bestelling *@
             <h2>@(isNormaal ? "Normale" : "Bulk") Bestelling Bevestigen</h2>
         </div>
-        
         <div class="card-body">
-            @* 
-            RESPONSIVE ORDER TABLE
-            =====================
-            
-            Table-responsive wrapper voor mobile compatibility:
-            - Horizontal scrolling op kleine schermen
-            - Clean table styling voor data presentation
-            - Contextual column headers (Product vs Onderdeel)
-            *@
+            @* Een tafel die je kunt scrollen als hij te groot is, zoals een lange rol papier *@
             <div class="table-responsive">
+                @* Dit is onze tafel waar alle spullen op staan die besteld worden *@
                 <table class="table">
+                    @* De bovenkant van de tafel met alle titels *@
                     <thead>
                         <tr>
+                            @* Kolomtitels: wat het is, hoeveel, wat het kost per stuk, en hoeveel alles samen kost *@
                             <th>@(isNormaal ? "Product" : "Onderdeel")</th>
                             <th>Aantal</th>
                             <th>Prijs per stuk</th>
                             <th>Totaal</th>
                         </tr>
-                    </thead>
-                    
-                    @* 
-                    ORDER ITEMS GENERATION
-                    =====================
-                    
-                    Dynamic table body generation:
-                    - Local totalPrice variable voor running total
-                    - LINQ Where clausule filtert alleen items met quantity > 0
-                    - Line-by-line calculation voor itemTotal
-                    - Dutch currency formatting (F2 voor 2 decimalen)
-                    *@
+                    </thead>                    @* Het middenstuk van de tafel waar alle bestelde spullen staan *@
                     <tbody>
                         @{
-                            // Local variable voor total calculation
+                            @* We beginnen met tellen hoeveel alles samen kost *@
                             decimal totalPrice = 0;
                         }
+                        @* Voor elk ding dat besteld wordt, maken we een rijtje in de tafel *@
                         @foreach (var item in Model.AvailableItems.Where(i => i.Quantity > 0))
                         {
-                            // Per-item calculation
+                            @* We rekenen uit hoeveel dit ene ding in totaal kost (aantal x prijs per stuk) *@
                             var itemTotal = item.Price * item.Quantity;
+                            @* We tellen dit bij onze grote som op *@
                             totalPrice += itemTotal;
+                            @* Nu maken we een rijtje in de tafel met alle informatie *@
                             <tr>
-                                <td>@item.Name</td>
-                                <td>@item.Quantity</td>
-                                <td>€@item.Price.ToString("F2")</td>
-                                <td>€@itemTotal.ToString("F2")</td>
+                                <td>@item.Name</td> @* Wat het is *@
+                                <td>@item.Quantity</td> @* Hoeveel *@
+                                <td>€@item.Price.ToString("F2")</td> @* Wat één stuk kost *@
+                                <td>€@itemTotal.ToString("F2")</td> @* Wat alles samen kost *@
                             </tr>
                         }
                     </tbody>
-                    
-                    @* 
-                    TABLE FOOTER: Grand total presentation
-                    - Text-end class voor right alignment
-                    - Strong emphasis voor total amount
-                    - Consistent currency formatting
-                    *@
+                    @* De onderkant van de tafel waar het eindtotaal staat *@
                     <tfoot>
                         <tr>
+                            @* We laten zien hoeveel ALLES samen kost, zoals mama doet in de winkel *@
                             <td colspan="3" class="text-end"><strong>Totaal:</strong></td>
                             <td>€@totalPrice.ToString("F2")</td>
                         </tr>
                     </tfoot>
                 </table>
-            </div>            @* 
-            ORDER CONFIRMATION FORM
-            =======================
-            
-            Hidden form voor secure order data transmission:
-            - POST method naar ProcessOrder action
-            - Url.Action helper voor type-safe routing
-            - Hidden fields voor complete order data
-            - JavaScript-triggered submission
-            *@
-            <div class="mt-4">
+            </div>            <div class="mt-4">
                 <form id="orderForm" method="post" action="@Url.Action("ProcessOrder", "Voorraad")">
-                    @* 
-                    HIDDEN ORDER DATA:
-                    Dictionary-based model binding voor complex data structures:
-                    - orderItems[ID].Property pattern voor collection binding
-                    - Alle relevante item properties worden meegestuurd
-                    - LINQ Where filtering voorkomt empty items
-                    *@
                     @foreach (var item in Model.AvailableItems.Where(i => i.Quantity > 0))
                     {
                         <input type="hidden" name="orderItems[@item.Id].Id" value="@item.Id" />
                         <input type="hidden" name="orderItems[@item.Id].Quantity" value="@item.Quantity" />
                         <input type="hidden" name="orderItems[@item.Id].Name" value="@item.Name" />
                         <input type="hidden" name="orderItems[@item.Id].Price" value="@item.Price" />
-                    }
-                    
-                    @* ORDER METADATA: Additional order information *@
-                    <input type="hidden" name="orderType" value="@orderType" />
+                    }                    <input type="hidden" name="orderType" value="@orderType" />
                     <input type="hidden" name="totalAmount" value="@totalPrice" />
-                    
-                    @* 
-                    ACTION BUTTONS:
-                    - JavaScript-triggered submission voor modal workflow
-                    - History.back() voor browser-native navigation
-                    - Button vs anchor semantic distinction
-                    *@
                     <button type="button" id="submitButton" class="btn btn-success">Bestelling Bevestigen</button>
                     <a href="javascript:history.back()" class="btn btn-secondary">Terug</a>
-                </form>
-            </div>
+                </form>            </div>
         </div>
     </div>
 </div>
 
-@* 
-ERROR HANDLING DISPLAY
-======================
-
-Conditional error message rendering:
-- TempData voor cross-request error communication
-- Bootstrap alert styling voor consistent feedback
-- User-friendly error presentation
-*@
 @if (TempData["ErrorMessage"] != null)
 {
     <div class="alert alert-danger">
@@ -266,511 +141,46 @@ Conditional error message rendering:
     </div>
 }
 
-@* 
-INTERACTIVE JAVASCRIPT FUNCTIONALITY
-====================================
-
-Geavanceerde client-side order processing met modal workflow:
-- Bootstrap 5 modal integration
-- Async/await voor moderne JavaScript patterns
-- Fetch API voor AJAX communication
-- Comprehensive error handling
-- Progressive enhancement principles
-
-EDUCATIEVE ASPECTEN:
-- Event-driven programming patterns
-- Promise-based asynchronous operations
-- DOM manipulation en event delegation
-- Bootstrap JavaScript component integration
-- Modern ES6+ syntax usage
-
-WORKFLOW:
-1. Initial button click → Show confirmation modal
-2. Confirmation → Hide modal, send AJAX request
-3. Success → Show success modal met navigation
-4. Error → Display user-friendly error message
-*@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Bootstrap 5 modal instantiation
         const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
         const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-        
-        // DOM element references voor performance
         const form = document.getElementById('orderForm');
         const submitButton = document.getElementById('submitButton');
 
-        /*
-        PRIMARY SUBMIT HANDLER
-        =====================
-        
-        Initial submission button click handler:
-        - Triggers confirmation modal display
-        - Prevents direct form submission
-        - Implements two-step confirmation pattern
-        */
+        // Als er op de "Bestelling Bevestigen" knop wordt geklikt
         submitButton.addEventListener('click', function() {
             confirmModal.show();
         });
 
-        /*
-        CONFIRMATION HANDLER
-        ===================
-        
-        Modal confirmation button click handler:
-        - Hides confirmation modal
-        - Triggers asynchronous order processing
-        - Handles success/error scenarios
-        - Uses modern Fetch API voor AJAX
-        */
+        // Als er op de "Bevestigen" knop in de confirm modal wordt geklikt
         document.getElementById('confirmButton').addEventListener('click', async function() {
-            // Hide confirmation modal before processing
             confirmModal.hide();
             
             try {
-                // FormData constructor voor automatic form serialization
                 const formData = new FormData(form);
-                
-                // Fetch API voor moderne AJAX communication
                 const response = await fetch(form.action, {
                     method: 'POST',
                     body: formData
                 });
 
-                // HTTP status check
                 if (response.ok) {
-                    // Success scenario: show success modal
+                    // Toon de success modal na succesvolle verwerking
                     successModal.show();
                 } else {
-                    // Server error scenario
                     throw new Error('Er is iets misgegaan bij het verwerken van de bestelling.');
                 }
             } catch (error) {
-                // Network or JavaScript error handling
                 alert(error.message);
             }
         });
 
-        /*
-        SUCCESS MODAL NAVIGATION
-        =======================
-        
-        Success modal navigation link handlers:
-        - Prevents default anchor behavior
-        - Programmatic navigation voor better control
-        - Ensures proper modal cleanup
-        */
+        // Handle success modal navigation links
         document.querySelectorAll('#successModal .modal-footer a').forEach(link => {
             link.addEventListener('click', function(e) {
                 e.preventDefault();
-                // Programmatic navigation to target URL
                 window.location.href = this.getAttribute('href');
             });
         });
     });
 </script>
-
-@* 
-CUSTOM STYLING VOOR ORDER CONFIRMATION VIEW
-===========================================
-
-Uitgebreide CSS styling die moderne web design principles implementeert
-met focus op gebruikerservaring, accessibility, en visual hierarchy.
-
-DESIGN PRINCIPLES:
-- Consistent Matrix branding
-- Mobile-first responsive design
-- Accessibility compliance (WCAG guidelines)
-- Visual hierarchy voor information scanning
-- Interactive feedback voor user actions
-
-TECHNICAL FEATURES:
-- CSS Grid/Flexbox voor moderne layouts
-- Custom properties voor maintainable styling
-- Smooth transitions voor enhanced UX
-- Responsive breakpoints voor device compatibility
-- Print-friendly styling considerations
-*@
-<style>
-    /* 
-    GLOBAL CONTAINER STYLING
-    =======================
-    
-    Enhanced container styling voor consistent layout:
-    - Maximum width constraints voor readability
-    - Responsive padding voor verschillende schermgroottes
-    - Subtle background treatment voor visual separation
-    */
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-        min-height: calc(100vh - 200px);
-    }
-
-    /* 
-    CARD COMPONENT ENHANCEMENTS
-    ==========================
-    
-    Verbeterde card styling voor professionele appearance:
-    - Subtle shadows voor depth perception
-    - Rounded corners voor modern aesthetic
-    - Enhanced border treatment
-    - Responsive padding adjustments
-    */
-    .card {
-        border: none;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    /* 
-    CARD HEADER STYLING
-    ==================
-    
-    Matrix-branded header met enhanced typography:
-    - Gradient background voor visual interest
-    - Improved text hierarchy
-    - Responsive font sizing
-    */
-    .card-header {
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        border-bottom: 3px solid #3498db;
-        padding: 20px 30px;
-    }
-
-    .card-header h2 {
-        margin: 0;
-        font-weight: 600;
-        font-size: 1.5rem;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    }
-
-    /* 
-    CARD BODY ENHANCEMENTS
-    =====================
-    
-    Enhanced content area styling:
-    - Generous padding voor readability
-    - Subtle background treatment
-    - Improved text contrast
-    */
-    .card-body {
-        padding: 30px;
-        background-color: #fafafa;
-        color: #2c3e50;
-    }
-
-    /* 
-    TABLE STYLING IMPROVEMENTS
-    =========================
-    
-    Professional table design voor data presentation:
-    - Enhanced readability met subtle borders
-    - Alternating row colors voor scanning
-    - Improved typography hierarchy
-    - Responsive behavior
-    */
-    .table {
-        margin-bottom: 0;
-        background-color: white;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    }
-
-    .table thead th {
-        background-color: #34495e;
-        color: white;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-size: 0.9rem;
-        padding: 15px 20px;
-        border: none;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
-
-    .table tbody td {
-        padding: 15px 20px;
-        vertical-align: middle;
-        border-bottom: 1px solid #ecf0f1;
-        transition: background-color 0.2s ease;
-    }
-
-    .table tbody tr:hover {
-        background-color: #f8f9fa;
-    }
-
-    .table tbody tr:nth-child(even) {
-        background-color: #fcfcfc;
-    }
-
-    .table tfoot td {
-        background-color: #2c3e50;
-        color: white;
-        font-weight: 700;
-        font-size: 1.1rem;
-        padding: 20px;
-        border: none;
-    }
-
-    /* 
-    RESPONSIVE TABLE ENHANCEMENTS
-    ============================
-    
-    Mobile-friendly table behavior:
-    - Horizontal scrolling op kleine schermen
-    - Maintained readability
-    - Touch-friendly spacing
-    */
-    .table-responsive {
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        margin-bottom: 20px;
-    }
-
-    @@media (max-width: 768px) {
-        .table thead th,
-        .table tbody td,
-        .table tfoot td {
-            padding: 12px 15px;
-            font-size: 0.9rem;
-        }
-    }
-
-    /* 
-    BUTTON STYLING ENHANCEMENTS
-    ===========================
-    
-    Improved button design voor better user interaction:
-    - Enhanced hover effects
-    - Better visual hierarchy
-    - Accessibility improvements
-    - Consistent spacing
-    */
-    .btn {
-        padding: 12px 24px;
-        font-weight: 600;
-        border-radius: 6px;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    .btn-success {
-        background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
-        border: none;
-        color: white;
-    }
-
-    .btn-success:hover {
-        background: linear-gradient(135deg, #229954 0%, #27ae60 100%);
-        color: white;
-    }
-
-    .btn-secondary {
-        background: linear-gradient(135deg, #95a5a6 0%, #bdc3c7 100%);
-        border: none;
-        color: #2c3e50;
-    }
-
-    .btn-secondary:hover {
-        background: linear-gradient(135deg, #7f8c8d 0%, #95a5a6 100%);
-        color: #2c3e50;
-    }
-
-    /* 
-    MODAL STYLING IMPROVEMENTS
-    ==========================
-    
-    Enhanced modal design voor better user experience:
-    - Improved backdrop treatment
-    - Better content hierarchy
-    - Enhanced animations
-    - Accessibility improvements
-    */
-    .modal-content {
-        border: none;
-        border-radius: 12px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-        overflow: hidden;
-    }
-
-    .modal-header {
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-        color: white;
-        border-bottom: none;
-        padding: 20px 30px;
-    }
-
-    .modal-title {
-        font-weight: 600;
-        font-size: 1.3rem;
-    }
-
-    .modal-body {
-        padding: 30px;
-        font-size: 1.1rem;
-        line-height: 1.6;
-        color: #2c3e50;
-    }
-
-    .modal-footer {
-        background-color: #f8f9fa;
-        border-top: 1px solid #ecf0f1;
-        padding: 20px 30px;
-        gap: 10px;
-    }
-
-    /* 
-    ALERT STYLING ENHANCEMENTS
-    ==========================
-    
-    Improved alert design voor better user feedback:
-    - Enhanced color schemes
-    - Better typography
-    - Subtle animations
-    */
-    .alert {
-        border: none;
-        border-radius: 8px;
-        padding: 15px 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .alert-danger {
-        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-        color: white;
-    }
-
-    /* 
-    ACCESSIBILITY ENHANCEMENTS
-    ==========================
-    
-    Improved accessibility voor better user experience:
-    - Focus states voor keyboard navigation
-    - High contrast mode support
-    - Screen reader optimizations
-    */
-    .btn:focus,
-    .modal .btn-close:focus {
-        outline: 2px solid #3498db;
-        outline-offset: 2px;
-        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
-    }
-
-    /* 
-    PRINT STYLING
-    =============
-    
-    Print-friendly styling voor order confirmations:
-    - Optimized layout voor paper
-    - Removed unnecessary elements
-    - Enhanced readability
-    */
-    @@media print {
-        .btn,
-        .modal,
-        video {
-            display: none !important;
-        }
-
-        .card {
-            box-shadow: none;
-            border: 1px solid #ddd;
-        }
-
-        .table {
-            font-size: 12px;
-        }
-
-        .card-header {
-            background: #f8f9fa !important;
-            color: #2c3e50 !important;
-        }
-    }
-
-    /* 
-    ANIMATION ENHANCEMENTS
-    =====================
-    
-    Subtle animations voor enhanced user experience:
-    - Smooth transitions
-    - Loading states
-    - Hover effects
-    */
-    @@keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .card {
-        animation: fadeInUp 0.6s ease-out;
-    }
-
-    /* 
-    RESPONSIVE DESIGN BREAKPOINTS
-    ============================
-    
-    Mobile-first responsive design:
-    - Tablet optimizations
-    - Mobile optimizations
-    - Large screen enhancements
-    */
-    @@media (max-width: 992px) {
-        .container {
-            padding: 15px;
-        }
-
-        .card-header,
-        .card-body {
-            padding: 20px;
-        }
-
-        .btn {
-            width: 100%;
-            margin-bottom: 10px;
-        }
-    }
-
-    @@media (max-width: 576px) {
-        .card-header h2 {
-            font-size: 1.3rem;
-        }
-
-        .modal-body {
-            padding: 20px;
-        }
-    }
-
-    @@media (min-width: 1400px) {
-        .container {
-            max-width: 1320px;
-        }
-    }
-</style>
